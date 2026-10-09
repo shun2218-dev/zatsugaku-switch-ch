@@ -1,5 +1,6 @@
 ---
 import { type Video, thumb, categoryOf } from '../lib/data';
+import CategoryIcon from './CategoryIcon.astro';
 interface Props { video: Video; showCategory?: boolean }
 const { video, showCategory = true } = Astro.props;
 const cat = categoryOf(video.category);
@@ -10,7 +11,7 @@ const cat = categoryOf(video.category);
     {video.format === 'longform' && <span class="badge">じっくり解説</span>}
   </div>
   <div class="card-body">
-    {showCategory && <span class="card-cat">{cat.emoji} {cat.name}</span>}
+    {showCategory && <span class="card-cat"><CategoryIcon slug={cat.slug} />{cat.name}</span>}
     <h3>{video.title}</h3>
   </div>
 </a>

@@ -24,10 +24,9 @@ export type Note = {
 
 export const videos = videosJson as Video[];
 
-export const categories = CATEGORY_RULES.map(({ slug, name, emoji }) => ({
+export const categories = CATEGORY_RULES.map(({ slug, name }) => ({
   slug,
   name,
-  emoji,
   videos: videos.filter((v) => v.category === slug),
 }));
 

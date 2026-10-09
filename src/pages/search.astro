@@ -20,8 +20,9 @@ import { topTags, searchUrl } from '../lib/data';
 
 <script>
   import { norm } from '../lib/normalize';
+  import { iconSvg } from '../lib/icons';
 
-  type Entry = { id: string; t: string; c: string; g: string[]; h: string; b: string; i: string; l: number; v: number };
+  type Entry = { id: string; t: string; c: string; k: string; g: string[]; h: string; b: string; i: string; l: number; v: number };
 
   const esc = (s: string) => s.replace(/[&<>"']/g, (ch) => `&#${ch.charCodeAt(0)};`);
 
@@ -84,7 +85,7 @@ import { topTags, searchUrl } from '../lib/data';
         ({ e }) => `
         <a class="card" href="/trivia/${e.id}/">
           <div class="card-img"><img src="${e.i}" alt="" loading="lazy" decoding="async" width="720" height="1260" />${e.l ? '<span class="badge">じっくり解説</span>' : ''}</div>
-          <div class="card-body"><span class="card-cat">${esc(e.c)}</span><h3>${esc(e.t)}</h3><p class="card-snippet">${snippet(e, terms)}</p></div>
+          <div class="card-body"><span class="card-cat">${iconSvg(e.k)}${esc(e.c)}</span><h3>${esc(e.t)}</h3><p class="card-snippet">${snippet(e, terms)}</p></div>
         </a>`,
       )
       .join('');

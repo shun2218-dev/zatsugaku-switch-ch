@@ -3,6 +3,7 @@ import '../styles/global.css';
 import { SITE, subscribeUrl } from '../lib/site';
 import { categories } from '../lib/data';
 import SearchForm from '../components/SearchForm.astro';
+import CategoryIcon from '../components/CategoryIcon.astro';
 
 interface Props {
   title?: string;
@@ -53,7 +54,7 @@ const ogImage = new URL(image, Astro.site);
         <a class="btn btn-sub header-sub" href={subscribeUrl} target="_blank" rel="noopener">チャンネル登録</a>
       </div>
       <nav class="wrap cat-nav" aria-label="カテゴリ">
-        {categories.map((c) => <a href={`/category/${c.slug}/`}>{c.emoji} {c.name}</a>)}
+        {categories.map((c) => <a href={`/category/${c.slug}/`}><CategoryIcon slug={c.slug} />{c.name}</a>)}
       </nav>
     </header>
     <main class="wrap">

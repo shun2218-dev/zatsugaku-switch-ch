@@ -3,6 +3,7 @@ import Base from '../layouts/Base.astro';
 import VideoCard from '../components/VideoCard.astro';
 import SubscribeCTA from '../components/SubscribeCTA.astro';
 import SearchForm from '../components/SearchForm.astro';
+import CategoryIcon from '../components/CategoryIcon.astro';
 import { SITE, subscribeUrl } from '../lib/site';
 import { videos, categories, popular, latest } from '../lib/data';
 
@@ -33,7 +34,7 @@ const jsonLd = [
     <div class="cat-grid">
       {categories.map((c) => (
         <a class="cat-tile" href={`/category/${c.slug}/`}>
-          <span class="cat-emoji">{c.emoji}</span>
+          <span class="cat-badge"><CategoryIcon slug={c.slug} /></span>
           <span class="cat-name">{c.name}</span>
           <span class="cat-count">{c.videos.length}本</span>
         </a>
