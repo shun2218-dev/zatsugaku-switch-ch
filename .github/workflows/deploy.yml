@@ -3,6 +3,7 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+  pull_request:
   workflow_dispatch:
 
 permissions:
@@ -11,13 +12,12 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
+  group: pages-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  # ビルドは毎回行い、壊れていないかを確かめる
   build:
-    # 独自ドメインを決めて SITE_URL（Settings → Variables）を登録するまでは公開しない
-    if: vars.SITE_URL != ''
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -31,11 +31,14 @@ jobs:
         env:
           SITE_URL: ${{ vars.SITE_URL }}
       - uses: actions/upload-pages-artifact@v3
+        if: github.ref == 'refs/heads/main' && vars.SITE_URL != ''
         with:
           path: dist
 
+  # 公開は main のみ。独自ドメインを決めて SITE_URL（Settings → Variables）を登録するまでは行わない
   deploy:
     needs: build
+    if: github.ref == 'refs/heads/main' && vars.SITE_URL != ''
     runs-on: ubuntu-latest
     environment:
       name: github-pages
