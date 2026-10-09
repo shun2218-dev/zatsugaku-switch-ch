@@ -3,6 +3,7 @@ import Base from '../../layouts/Base.astro';
 import VideoCard from '../../components/VideoCard.astro';
 import SubscribeCTA from '../../components/SubscribeCTA.astro';
 import Breadcrumb from '../../components/Breadcrumb.astro';
+import CategoryIcon from '../../components/CategoryIcon.astro';
 import { categories } from '../../lib/data';
 
 export function getStaticPaths() {
@@ -13,7 +14,7 @@ const sample = cat.videos.slice(0, 3).map((v) => `「${v.title}」`).join('');
 ---
 <Base title={`${cat.name}の雑学`} description={`${cat.name}にまつわる雑学${cat.videos.length}本。${sample}など、思わず人に話したくなる「なぜ？」を解説します。`}>
   <Breadcrumb items={[{ name: 'ホーム', href: '/' }, { name: cat.name }]} />
-  <h1 class="page-title">{cat.emoji} {cat.name}の雑学<span>{cat.videos.length}本</span></h1>
+  <h1 class="page-title page-title-icon"><span class="cat-badge"><CategoryIcon slug={cat.slug} /></span>{cat.name}の雑学<span>{cat.videos.length}本</span></h1>
   <div class="grid">{cat.videos.map((v) => <VideoCard video={v} showCategory={false} />)}</div>
   <SubscribeCTA />
 </Base>

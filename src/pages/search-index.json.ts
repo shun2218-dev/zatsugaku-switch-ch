@@ -16,7 +16,8 @@ export const GET: APIRoute = () => {
     return {
       id: v.id,
       t: v.title,
-      c: `${cat.emoji} ${cat.name}`,
+      c: cat.name,
+      k: cat.slug,
       g: v.tags,
       h: note?.frontmatter.answer ?? v.hook,
       b: [plainText(v), note ? stripMarkdown(note.rawContent()) : ''].join(' '),

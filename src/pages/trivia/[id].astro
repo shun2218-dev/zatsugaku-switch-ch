@@ -4,6 +4,7 @@ import VideoCard from '../../components/VideoCard.astro';
 import YouTubeEmbed from '../../components/YouTubeEmbed.astro';
 import Share from '../../components/Share.astro';
 import Breadcrumb from '../../components/Breadcrumb.astro';
+import CategoryIcon from '../../components/CategoryIcon.astro';
 import SubscribeCTA from '../../components/SubscribeCTA.astro';
 import { SITE } from '../../lib/site';
 import { videos, type Video, categoryOf, noteOf, related, plainText, thumb, watchUrl, displayTags, searchUrl } from '../../lib/data';
@@ -61,7 +62,7 @@ const jsonLd = [
 
   <article class="article">
     <header class="article-head">
-      <span class="card-cat">{cat.emoji} {cat.name}</span>
+      <span class="card-cat"><CategoryIcon slug={cat.slug} />{cat.name}</span>
       <h1>{video.title}</h1>
       <p class="meta">動画公開: <time datetime={video.publishedAt}>{dateLabel}</time></p>
       <div class="tags article-tags">
