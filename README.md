@@ -48,7 +48,18 @@ sources:
 
 ## 公開
 
-1. GitHub にリポジトリを作って push
-2. Settings → Pages → Source を「GitHub Actions」にする
-3. Settings → Variables に `SITE_URL`（例: `https://zatsugaku-switch.jp`）を登録
-4. 独自ドメインは `public/CNAME` にドメイン名を書き、DNS を GitHub Pages に向ける
+本番: https://zatsugaku-switch.com （GitHub Pages・GitHub Actions でデプロイ）
+
+- main に push すると `.github/workflows/deploy.yml` がビルドし、Variables の `SITE_URL` が登録されていれば Pages に公開する（未登録ならビルドの確認だけ）
+- 独自ドメインはリポジトリの Settings → Pages → Custom domain で設定する。GitHub Actions で公開する場合、`CNAME` ファイルは使われない（置かなくてよい）
+
+### DNS（Cloudflare）
+
+| 種類 | 名前 | 値 | プロキシ |
+|---|---|---|---|
+| A | `@` | 185.199.108.153 / .109.153 / .110.153 / .111.153（4件） | DNS only |
+| AAAA | `@` | 2606:50c0:8000::153 / 8001 / 8002 / 8003（4件） | DNS only |
+| CNAME | `www` | shun2218-dev.github.io | DNS only |
+| TXT | `_github-pages-challenge-shun2218-dev` | GitHub のドメイン確認で表示される値 | — |
+
+プロキシ（オレンジの雲）をオンにすると、GitHub が HTTPS 証明書を発行できないことがあるので DNS only にする。
