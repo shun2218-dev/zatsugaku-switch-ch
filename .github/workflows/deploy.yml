@@ -16,6 +16,8 @@ concurrency:
 
 jobs:
   build:
+    # 独自ドメインを決めて SITE_URL（Settings → Variables）を登録するまでは公開しない
+    if: vars.SITE_URL != ''
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
