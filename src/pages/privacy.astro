@@ -1,0 +1,30 @@
+---
+import Base from '../layouts/Base.astro';
+import { SITE } from '../lib/site';
+---
+<Base title="プライバシーポリシー" description="雑学スイッチ公式サイトのプライバシーポリシーです。">
+  <article class="article prose narrow">
+    <h1 class="page-title">プライバシーポリシー</h1>
+    <p class="meta">最終更新: 2026年10月9日</p>
+
+    <h2>1. 取得する情報</h2>
+    <p>本サイトは、閲覧者の氏名やメールアドレスなどの個人情報を入力していただく機能を持っていません。本サイト自身はCookieを使用していません。</p>
+
+    <h2>2. ホスティング</h2>
+    <p>本サイトは GitHub Pages で配信しています。配信の過程で、GitHub社がアクセス元のIPアドレス等を記録する場合があります。詳しくは <a href="https://docs.github.com/ja/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener">GitHub のプライバシーステートメント</a> をご確認ください。</p>
+
+    <h2>3. YouTube 動画の埋め込み</h2>
+    <p>記事内の動画は、再生ボタンを押したときに初めて YouTube（プライバシー強化モード）を読み込みます。再生後は Google による情報の取り扱いが適用されます。詳しくは <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google プライバシーポリシー</a> をご確認ください。</p>
+
+    <h2>4. 外部サービスへのシェア</h2>
+    <p>X や LINE のシェアボタンを押すと、各サービスのページへ移動します。移動先での情報の取り扱いは各サービスの規約に従います。</p>
+
+    <h2>5. 本ポリシーの変更</h2>
+    <p>アクセス解析ツールの導入などにより取り扱いが変わる場合は、このページを更新してお知らせします。</p>
+
+    <h2>6. お問い合わせ</h2>
+    <p><a href={`mailto:${SITE.contact}`}>{SITE.contact}</a></p>
+
+    <p class="meta">動画制作ツール「AutoTube Studio」（YouTube API Services を利用）のプライバシーポリシーは <a href="/autotube/privacy.html">こちら</a>。</p>
+  </article>
+</Base>

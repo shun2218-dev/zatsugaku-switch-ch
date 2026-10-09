@@ -1,0 +1,25 @@
+---
+// クリックされるまで YouTube を読み込まない軽量プレイヤー（表示速度とプライバシーのため）
+import { type Video, thumb } from '../lib/data';
+interface Props { video: Video }
+const { video } = Astro.props;
+const vertical = video.format === 'short';
+---
+<div class:list={['yt', { vertical }]}>
+  <button type="button" class="yt-facade" data-id={video.id} aria-label={`動画を再生: ${video.title}`}>
+    <img src={thumb(video)} alt="" width="720" height="1260" />
+    <span class="yt-play" aria-hidden="true"></span>
+  </button>
+</div>
+<script>
+  document.querySelectorAll<HTMLButtonElement>('.yt-facade').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const iframe = document.createElement('iframe');
+      iframe.src = `https://www.youtube-nocookie.com/embed/${btn.dataset.id}?autoplay=1&rel=0`;
+      iframe.title = btn.getAttribute('aria-label') ?? 'YouTube';
+      iframe.allow = 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture';
+      iframe.allowFullscreen = true;
+      btn.replaceWith(iframe);
+    });
+  });
+</script>

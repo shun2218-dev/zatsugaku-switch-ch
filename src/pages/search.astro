@@ -1,0 +1,121 @@
+---
+import Base from '../layouts/Base.astro';
+import SearchForm from '../components/SearchForm.astro';
+import { topTags, searchUrl } from '../lib/data';
+---
+<Base title="雑学を検索" description="雑学スイッチの雑学をキーワードで検索できます。" noindex>
+  <h1 class="page-title">雑学を検索</h1>
+  <SearchForm id="search-page-q" class="search-page" autofocus />
+
+  <div id="search-status" class="search-status" aria-live="polite"></div>
+  <div id="search-results" class="grid search-results"></div>
+
+  <section id="search-suggest" class="section">
+    <h2 class="section-title">よく出てくるテーマ</h2>
+    <div class="tags">
+      {topTags().map((t) => <a class="tag" href={searchUrl(t)}>#{t}</a>)}
+    </div>
+  </section>
+</Base>
+
+<script>
+  import { norm } from '../lib/normalize';
+
+  type Entry = { id: string; t: string; c: string; g: string[]; h: string; b: string; i: string; l: number; v: number };
+
+  const esc = (s: string) => s.replace(/[&<>"']/g, (ch) => `&#${ch.charCodeAt(0)};`);
+
+  const input = document.querySelector<HTMLInputElement>('#search-page-q')!;
+  const status = document.querySelector<HTMLElement>('#search-status')!;
+  const results = document.querySelector<HTMLElement>('#search-results')!;
+  const suggest = document.querySelector<HTMLElement>('#search-suggest')!;
+
+  let index: (Entry & { nt: string; ng: string; nh: string; nb: string })[] = [];
+
+  // 本文の一致箇所の前後を抜き出し、一致部分を <mark> で囲む
+  function snippet(e: Entry & { nb: string }, terms: string[]) {
+    const pos = Math.min(...terms.map((t) => e.nb.indexOf(t)).filter((p) => p >= 0));
+    if (!Number.isFinite(pos)) return esc(e.h);
+    // 正規化で文字数が変わった本文は位置がずれるので、ハイライトせず要約を出す
+    if (e.nb.length !== e.b.length) return esc(e.h);
+    const start = Math.max(0, pos - 24);
+    const end = Math.min(e.b.length, pos + 56);
+    const marked = new Array<boolean>(end - start).fill(false);
+    for (const t of terms) {
+      for (let p = e.nb.indexOf(t, start); p >= 0 && p < end; p = e.nb.indexOf(t, p + 1)) {
+        for (let k = p; k < Math.min(p + t.length, end); k++) marked[k - start] = true;
+      }
+    }
+    let html = start > 0 ? '…' : '';
+    for (let k = 0; k < marked.length; ) {
+      let j = k;
+      while (j < marked.length && marked[j] === marked[k]) j++;
+      const piece = esc(e.b.slice(start + k, start + j));
+      html += marked[k] ? `<mark>${piece}</mark>` : piece;
+      k = j;
+    }
+    return html + (end < e.b.length ? '…' : '');
+  }
+
+  function search(q: string) {
+    const terms = norm(q).split(/[\s　]+/).filter(Boolean);
+    suggest.hidden = terms.length > 0;
+    if (!terms.length) {
+      status.textContent = '';
+      results.innerHTML = '';
+      return;
+    }
+    const hits = index
+      .map((e) => {
+        let score = 0;
+        for (const t of terms) {
+          const s = (e.nt.includes(t) ? 10 : 0) + (e.ng.includes(t) ? 6 : 0) + (e.nh.includes(t) ? 3 : 0) + (e.nb.includes(t) ? 1 : 0);
+          if (!s) return null; // すべての語を含むものだけ
+          score += s;
+        }
+        return { e, score };
+      })
+      .filter((r): r is { e: (typeof index)[number]; score: number } => r !== null)
+      .sort((a, b) => b.score - a.score || b.e.v - a.e.v);
+
+    status.textContent = hits.length ? `「${q}」の雑学 ${hits.length}本` : `「${q}」に当てはまる雑学は見つかりませんでした。別のことばで探してみてください。`;
+    results.innerHTML = hits
+      .map(
+        ({ e }) => `
+        <a class="card" href="/trivia/${e.id}/">
+          <div class="card-img"><img src="${e.i}" alt="" loading="lazy" decoding="async" width="720" height="1260" />${e.l ? '<span class="badge">じっくり解説</span>' : ''}</div>
+          <div class="card-body"><span class="card-cat">${esc(e.c)}</span><h3>${esc(e.t)}</h3><p class="card-snippet">${snippet(e, terms)}</p></div>
+        </a>`,
+      )
+      .join('');
+  }
+
+  function run() {
+    const q = input.value.trim();
+    const url = new URL(location.href);
+    if (q) url.searchParams.set('q', q);
+    else url.searchParams.delete('q');
+    history.replaceState(null, '', url);
+    search(q);
+  }
+
+  input.value = new URLSearchParams(location.search).get('q') ?? '';
+  status.textContent = input.value ? '読み込み中…' : '';
+  fetch('/search-index.json')
+    .then((r) => r.json())
+    .then((data: Entry[]) => {
+      index = data.map((e) => ({ ...e, nt: norm(e.t), ng: norm(e.g.join(' ')), nh: norm(e.h), nb: norm(e.b) }));
+      search(input.value.trim());
+    });
+
+  let timer: number | undefined;
+  input.addEventListener('input', () => {
+    clearTimeout(timer);
+    timer = window.setTimeout(run, 150);
+  });
+  input.form!.addEventListener('submit', (ev) => {
+    ev.preventDefault();
+    run();
+    input.blur();
+  });
+</script>

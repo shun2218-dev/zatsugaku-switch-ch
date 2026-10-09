@@ -1,0 +1,77 @@
+---
+import '../styles/global.css';
+import { SITE, subscribeUrl } from '../lib/site';
+import { categories } from '../lib/data';
+import SearchForm from '../components/SearchForm.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  type?: 'website' | 'article';
+  jsonLd?: object[];
+  noindex?: boolean;
+}
+const { title, description = SITE.description, image = '/og-default.jpg', type = 'website', jsonLd = [], noindex = false } = Astro.props;
+const fullTitle = title ? `${title}｜${SITE.name}` : `${SITE.name}｜${SITE.tagline}`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogImage = new URL(image, Astro.site);
+---
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.png" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="theme-color" content="#1b2a4a" />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:title" content={title ?? SITE.name} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content={type} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:locale" content="ja_JP" />
+    <meta name="twitter:card" content="summary_large_image" />
+    {jsonLd.map((d) => <script type="application/ld+json" set:html={JSON.stringify(d)} />)}
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap header-inner">
+        <a href="/" class="logo">
+          <img src="/icon.webp" alt="" width="36" height="36" />
+          <span>{SITE.name}</span>
+        </a>
+        <SearchForm id="header-q" class="header-search" />
+        <a class="header-search-icon" href="/search/" aria-label="雑学を検索">
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2.4" /><path d="m16.5 16.5 4.5 4.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" /></svg>
+        </a>
+        <a class="btn btn-sub header-sub" href={subscribeUrl} target="_blank" rel="noopener">チャンネル登録</a>
+      </div>
+      <nav class="wrap cat-nav" aria-label="カテゴリ">
+        {categories.map((c) => <a href={`/category/${c.slug}/`}>{c.emoji} {c.name}</a>)}
+      </nav>
+    </header>
+    <main class="wrap">
+      <slot />
+    </main>
+    <footer class="site-footer">
+      <div class="wrap">
+        <p class="footer-brand">{SITE.name}<span>{SITE.tagline}</span></p>
+        <nav>
+          <a href="/trivia/">雑学一覧</a>
+          <a href="/search/">雑学を検索</a>
+          <a href="/about/">このサイトについて</a>
+          <a href="/privacy/">プライバシーポリシー</a>
+          <a href="/terms/">利用規約</a>
+          <a href={SITE.channelUrl} target="_blank" rel="noopener">YouTube</a>
+        </nav>
+        <p class="footer-note">動画と記事はAIを活用して制作し、公開前に運営者が確認しています。</p>
+      </div>
+    </footer>
+  </body>
+</html>

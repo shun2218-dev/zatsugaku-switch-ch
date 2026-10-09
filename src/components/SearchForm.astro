@@ -1,0 +1,11 @@
+---
+interface Props { id?: string; class?: string; autofocus?: boolean }
+const { id = 'q', class: className, autofocus = false } = Astro.props;
+---
+<form class:list={['search-form', className]} action="/search/" method="get" role="search">
+  <label class="visually-hidden" for={id}>雑学を検索</label>
+  <input id={id} name="q" type="search" placeholder="気になる「なぜ？」を検索（例: 雷、ハチミツ）" autocomplete="off" enterkeyhint="search" autofocus={autofocus} />
+  <button type="submit" aria-label="検索">
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2.4" /><path d="m16.5 16.5 4.5 4.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" /></svg>
+  </button>
+</form>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AutoTube Studio — Service Description</title>
+<style>
+  body { font-family: -apple-system, "Hiragino Sans", "Noto Sans JP", sans-serif; max-width: 760px; margin: 0 auto; padding: 2rem 1.25rem 4rem; color: #222; line-height: 1.75; }
+  h1 { font-size: 1.6rem; border-bottom: 2px solid #f2b01e; padding-bottom: .4rem; }
+  h2 { font-size: 1.15rem; margin-top: 2.2rem; }
+  .en { color: #555; font-size: .92rem; }
+  nav a { margin-right: 1rem; }
+  footer { margin-top: 3rem; color: #888; font-size: .85rem; border-top: 1px solid #ddd; padding-top: 1rem; }
+  code { background: #f5f5f5; padding: .1rem .3rem; border-radius: 3px; }
+</style>
+</head>
+<body>
+<h1>AutoTube Studio</h1>
+<nav>
+  <a href="./index.html">Home</a>
+  <a href="./privacy.html">Privacy Policy</a>
+  <a href="./terms.html">Terms of Service</a>
+</nav>
+
+<h2>サービス概要 / About</h2>
+<p>
+AutoTube Studio は、YouTube チャンネル「雑学スイッチ」を運営するための<strong>個人利用・単一ユーザーの動画制作支援ツール</strong>です。
+企画の立案、ナレーション音声・背景画像の生成、動画の合成、YouTube への限定公開（unlisted）アップロード、
+および視聴実績の分析を、運営者本人の管理下で行います。
+</p>
+<p class="en">
+AutoTube Studio is a <strong>private, single-user video production tool</strong> operated by an individual developer
+to manage their own YouTube channel. It assists with video planning, narration/background generation,
+video composition, uploading videos as <em>unlisted</em> to the operator's own channel, and analyzing
+the channel's performance data.
+</p>
+
+<h2>YouTube API Services の利用について / Use of YouTube API Services</h2>
+<p>本ツールは YouTube API Services を以下の目的で利用します。</p>
+<ul>
+  <li><strong>YouTube Data API</strong>: 運営者自身のチャンネルへの動画アップロード（既定は限定公開）とメタデータ設定</li>
+  <li><strong>YouTube Analytics API</strong>: 運営者自身のチャンネルの視聴実績（再生数・視聴維持率等）の取得と改善分析</li>
+</ul>
+<p class="en">
+This tool uses the YouTube Data API to upload videos (unlisted by default) and set metadata on the
+operator's own channel, and the YouTube Analytics API to retrieve the operator's own channel
+performance reports for content improvement. It accesses only the channel owned by the operator,
+with the operator's explicit OAuth consent. No third-party user data is accessed.
+</p>
+
+<h2>コンテンツについて / Content</h2>
+<p>
+生成する動画はAI技術（大規模言語モデル・音声合成・画像生成）を活用して制作しており、
+その旨を各動画の概要欄に明記しています。すべての動画は公開前に人間（運営者）による確認・承認を経ます。
+</p>
+<p class="en">
+Videos are produced with the assistance of AI technologies (LLM scripting, speech synthesis, image
+generation), and this is disclosed in each video's description. Every video is reviewed and approved
+by the human operator before being made public.
+</p>
+
+<footer>
+  運営者 / Operator: Individual developer (Japan) ・ Contact: shun2218.dev@gmail.com<br>
+  <a href="./privacy.html">Privacy Policy</a> ・ <a href="./terms.html">Terms of Service</a> ・
+  <a href="https://www.youtube.com/t/terms" target="_blank" rel="noreferrer">YouTube Terms of Service</a>
+</footer>
+</body>
+</html>
