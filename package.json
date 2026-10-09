@@ -1,0 +1,20 @@
+{
+  "name": "zatsugaku-switch-site",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "export": "node scripts/export.mjs",
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.4",
+    "astro": "^7.3.7"
+  },
+  "devDependencies": {
+    "pg": "^8.23.1",
+    "sharp": "^0.35.5"
+  },
+  "packageManager": "pnpm@12.6.0"
+}
