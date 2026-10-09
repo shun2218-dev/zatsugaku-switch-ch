@@ -1,0 +1,14 @@
+---
+// パンくずリスト。最後の項目（いま見ているページ）はリンクにしない
+interface Props { items: { name: string; href?: string }[] }
+const { items } = Astro.props;
+---
+<nav class="breadcrumb" aria-label="パンくずリスト">
+  <ol>
+    {items.map((item, i) => (
+      <li>
+        {i === items.length - 1 || !item.href ? <span aria-current={i === items.length - 1 ? 'page' : undefined}>{item.name}</span> : <a href={item.href}>{item.name}</a>}
+      </li>
+    ))}
+  </ol>
+</nav>
