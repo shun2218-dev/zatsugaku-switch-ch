@@ -1,0 +1,124 @@
+---
+import Base from '../../layouts/Base.astro';
+import VideoCard from '../../components/VideoCard.astro';
+import YouTubeEmbed from '../../components/YouTubeEmbed.astro';
+import Share from '../../components/Share.astro';
+import SubscribeCTA from '../../components/SubscribeCTA.astro';
+import { SITE } from '../../lib/site';
+import { videos, type Video, categoryOf, noteOf, related, plainText, thumb, watchUrl, displayTags, searchUrl } from '../../lib/data';
+
+export function getStaticPaths() {
+  return videos.map((video) => ({ params: { id: video.id }, props: { video } }));
+}
+
+const { video } = Astro.props as { video: Video };
+const cat = categoryOf(video.category);
+const note = noteOf(video.id);
+const answer = note?.frontmatter.answer;
+const sources = note?.frontmatter.sources ?? [];
+const url = new URL(Astro.url.pathname, Astro.site);
+const description = (answer ?? plainText(video)).slice(0, 110);
+const published = new Date(video.publishedAt);
+const dateLabel = published.toLocaleDateString('ja-JP', { timeZone: 'Asia/Tokyo', year: 'numeric', month: 'long', day: 'numeric' });
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: video.title,
+    description,
+    image: [new URL(thumb(video), Astro.site).href],
+    datePublished: video.publishedAt,
+    dateModified: note?.frontmatter.reviewedAt ?? video.publishedAt,
+    author: { '@type': 'Organization', name: SITE.name, url: Astro.site?.href },
+    publisher: { '@type': 'Organization', name: SITE.name },
+    mainEntityOfPage: url.href,
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'VideoObject',
+    name: video.title,
+    description: video.description || description,
+    thumbnailUrl: `https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`,
+    uploadDate: video.publishedAt,
+    contentUrl: watchUrl(video),
+    embedUrl: `https://www.youtube.com/embed/${video.id}`,
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'ホーム', item: new URL('/', Astro.site).href },
+      { '@type': 'ListItem', position: 2, name: cat.name, item: new URL(`/category/${cat.slug}/`, Astro.site).href },
+      { '@type': 'ListItem', position: 3, name: video.title },
+    ],
+  },
+];
+---
+<Base title={video.title} description={description} image={thumb(video)} type="article" jsonLd={jsonLd}>
+  <nav class="breadcrumb" aria-label="パンくずリスト">
+    <a href="/">ホーム</a> › <a href={`/category/${cat.slug}/`}>{cat.name}</a>
+  </nav>
+
+  <article class="article">
+    <header class="article-head">
+      <span class="card-cat">{cat.emoji} {cat.name}</span>
+      <h1>{video.title}</h1>
+      <p class="meta">動画公開: <time datetime={video.publishedAt}>{dateLabel}</time></p>
+      <div class="tags article-tags">
+        {displayTags(video).map((t) => <a class="tag" href={searchUrl(t)}>#{t}</a>)}
+      </div>
+    </header>
+
+    <div class="article-top">
+      <YouTubeEmbed video={video} />
+      <div class="answer">
+        <p class="answer-label">ひとことで言うと</p>
+        <p class="answer-text">{answer ?? video.hook}</p>
+        <a class="btn btn-ghost" href={watchUrl(video)} target="_blank" rel="noopener">YouTubeで見る</a>
+      </div>
+    </div>
+
+    <section>
+      <h2>動画の内容</h2>
+      <ol class="scenes">
+        {video.scenes.map((s) => (
+          <li>
+            {s.image && <img src={s.image} alt={s.alt} loading="lazy" decoding="async" width="720" height={video.format === 'short' ? 1260 : 411} class:list={{ wide: video.format === 'longform' }} />}
+            <p>{s.text}</p>
+          </li>
+        ))}
+      </ol>
+    </section>
+
+    {note && (
+      <section class="prose">
+        <h2>もう少し詳しく</h2>
+        <note.Content />
+      </section>
+    )}
+
+    {sources.length > 0 && (
+      <section class="sources">
+        <h2>出典・参考資料</h2>
+        <ul>
+          {sources.map((s) => (
+            <li><a href={s.url} target="_blank" rel="noopener">{s.title}</a>（{s.publisher}）</li>
+          ))}
+        </ul>
+        {note?.frontmatter.reviewedAt && <p class="meta">最終確認日: {note.frontmatter.reviewedAt}</p>}
+      </section>
+    )}
+
+    <Share title={video.title} url={url} />
+    <SubscribeCTA />
+  </article>
+
+  <section class="section">
+    <h2 class="section-title">あわせて見たい雑学</h2>
+    <div class="grid">
+      {related(video).map((v) => <VideoCard video={v} />)}
+    </div>
+    <p class="more"><a href={`/category/${cat.slug}/`}>{cat.name}の雑学をすべて見る →</a></p>
+  </section>
+</Base>

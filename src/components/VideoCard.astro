@@ -1,0 +1,16 @@
+---
+import { type Video, thumb, categoryOf } from '../lib/data';
+interface Props { video: Video; showCategory?: boolean }
+const { video, showCategory = true } = Astro.props;
+const cat = categoryOf(video.category);
+---
+<a class="card" href={`/trivia/${video.id}/`}>
+  <div class="card-img">
+    <img src={thumb(video)} alt="" loading="lazy" decoding="async" width="720" height="1260" />
+    {video.format === 'longform' && <span class="badge">じっくり解説</span>}
+  </div>
+  <div class="card-body">
+    {showCategory && <span class="card-cat">{cat.emoji} {cat.name}</span>}
+    <h3>{video.title}</h3>
+  </div>
+</a>

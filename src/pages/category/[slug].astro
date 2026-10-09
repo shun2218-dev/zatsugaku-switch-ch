@@ -1,0 +1,18 @@
+---
+import Base from '../../layouts/Base.astro';
+import VideoCard from '../../components/VideoCard.astro';
+import SubscribeCTA from '../../components/SubscribeCTA.astro';
+import { categories } from '../../lib/data';
+
+export function getStaticPaths() {
+  return categories.map((cat) => ({ params: { slug: cat.slug }, props: { cat } }));
+}
+const { cat } = Astro.props as { cat: (typeof categories)[number] };
+const sample = cat.videos.slice(0, 3).map((v) => `「${v.title}」`).join('');
+---
+<Base title={`${cat.name}の雑学`} description={`${cat.name}にまつわる雑学${cat.videos.length}本。${sample}など、思わず人に話したくなる「なぜ？」を解説します。`}>
+  <nav class="breadcrumb" aria-label="パンくずリスト"><a href="/">ホーム</a> › {cat.name}</nav>
+  <h1 class="page-title">{cat.emoji} {cat.name}の雑学<span>{cat.videos.length}本</span></h1>
+  <div class="grid">{cat.videos.map((v) => <VideoCard video={v} showCategory={false} />)}</div>
+  <SubscribeCTA />
+</Base>

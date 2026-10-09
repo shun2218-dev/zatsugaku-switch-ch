@@ -1,0 +1,51 @@
+---
+import Base from '../layouts/Base.astro';
+import VideoCard from '../components/VideoCard.astro';
+import SubscribeCTA from '../components/SubscribeCTA.astro';
+import SearchForm from '../components/SearchForm.astro';
+import { SITE, subscribeUrl } from '../lib/site';
+import { videos, categories, popular, latest } from '../lib/data';
+
+const jsonLd = [
+  { '@context': 'https://schema.org', '@type': 'WebSite', name: SITE.name, url: Astro.site?.href, inLanguage: 'ja' },
+  { '@context': 'https://schema.org', '@type': 'Organization', name: SITE.name, url: Astro.site?.href, logo: new URL('/apple-touch-icon.png', Astro.site).href, sameAs: [SITE.channelUrl] },
+];
+---
+<Base jsonLd={jsonLd}>
+  <section class="hero">
+    <p class="hero-kicker">YouTube 雑学チャンネル</p>
+    <h1>{SITE.tagline}</h1>
+    <p class="hero-lead">「なぜハチミツは腐らないの？」「なぜ雷は音が遅れて聞こえるの？」――<br />毎日の「なぜ？」を短い動画と読みもので解き明かします。</p>
+    <SearchForm id="hero-q" />
+    <div class="hero-actions">
+      <a class="btn btn-sub" href={subscribeUrl} target="_blank" rel="noopener">YouTubeでチャンネル登録</a>
+      <a class="btn btn-ghost-light" href="/trivia/">雑学を読む（{videos.length}本）</a>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">よく見られている雑学</h2>
+    <div class="grid">{popular.slice(0, 8).map((v) => <VideoCard video={v} />)}</div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">カテゴリから探す</h2>
+    <div class="cat-grid">
+      {categories.map((c) => (
+        <a class="cat-tile" href={`/category/${c.slug}/`}>
+          <span class="cat-emoji">{c.emoji}</span>
+          <span class="cat-name">{c.name}</span>
+          <span class="cat-count">{c.videos.length}本</span>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">新着の雑学</h2>
+    <div class="grid">{latest.slice(0, 8).map((v) => <VideoCard video={v} />)}</div>
+    <p class="more"><a href="/trivia/">すべての雑学を見る →</a></p>
+  </section>
+
+  <SubscribeCTA />
+</Base>

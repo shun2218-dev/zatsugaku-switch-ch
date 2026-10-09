@@ -1,0 +1,11 @@
+---
+import Base from '../../layouts/Base.astro';
+import VideoCard from '../../components/VideoCard.astro';
+import SearchForm from '../../components/SearchForm.astro';
+import { videos } from '../../lib/data';
+---
+<Base title="雑学一覧" description={`雑学スイッチで紹介した雑学${videos.length}本の一覧です。`}>
+  <h1 class="page-title">雑学一覧<span>{videos.length}本</span></h1>
+  <SearchForm id="list-q" class="search-page" />
+  <div class="grid">{videos.map((v) => <VideoCard video={v} />)}</div>
+</Base>
