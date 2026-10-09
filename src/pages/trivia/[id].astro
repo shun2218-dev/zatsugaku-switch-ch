@@ -3,6 +3,7 @@ import Base from '../../layouts/Base.astro';
 import VideoCard from '../../components/VideoCard.astro';
 import YouTubeEmbed from '../../components/YouTubeEmbed.astro';
 import Share from '../../components/Share.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
 import SubscribeCTA from '../../components/SubscribeCTA.astro';
 import { SITE } from '../../lib/site';
 import { videos, type Video, categoryOf, noteOf, related, plainText, thumb, watchUrl, displayTags, searchUrl } from '../../lib/data';
@@ -56,9 +57,7 @@ const jsonLd = [
 ];
 ---
 <Base title={video.title} description={description} image={thumb(video)} type="article" jsonLd={jsonLd}>
-  <nav class="breadcrumb" aria-label="パンくずリスト">
-    <a href="/">ホーム</a> › <a href={`/category/${cat.slug}/`}>{cat.name}</a>
-  </nav>
+  <Breadcrumb items={[{ name: 'ホーム', href: '/' }, { name: cat.name, href: `/category/${cat.slug}/` }, { name: video.title }]} />
 
   <article class="article">
     <header class="article-head">

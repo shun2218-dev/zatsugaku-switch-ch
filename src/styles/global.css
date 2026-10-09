@@ -76,8 +76,14 @@ main { padding-block: 24px 48px; }
 .cat-count { font-size: .8rem; color: var(--muted); }
 
 /* ---- article ---- */
-.breadcrumb { font-size: .85rem; color: var(--muted); }
+.breadcrumb { font-size: .85rem; color: var(--muted); margin-bottom: 12px; }
+/* 1行に収め、長い現在ページ名だけ「…」で省略する（すぐ下の見出しと同じ文なので全文は不要） */
+.breadcrumb ol { display: flex; list-style: none; margin: 0; padding: 0; white-space: nowrap; }
+.breadcrumb li { flex: none; display: flex; min-width: 0; }
+.breadcrumb li:last-child { flex: 0 1 auto; }
+.breadcrumb li + li::before { content: '›'; margin: 0 .5em; }
 .breadcrumb a { color: var(--muted); }
+.breadcrumb [aria-current] { color: var(--ink); overflow: hidden; text-overflow: ellipsis; }
 .article { max-width: 760px; margin-inline: auto; }
 .article-head h1 { font-size: clamp(1.5rem, 4.5vw, 2.1rem); margin: 8px 0 4px; }
 .meta { color: var(--muted); font-size: .85rem; margin: 0; }
