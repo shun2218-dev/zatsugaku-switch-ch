@@ -6,7 +6,7 @@ const { tone = 'light' } = Astro.props;
 
 // 1万以上は「12.8万」のように万でまとめる
 const count = (n: number) =>
-  n >= 10_000 ? `${(n / 10_000).toFixed(n >= 100_000 ? 0 : 1).replace(/\.0$/, '')}万` : n.toLocaleString('ja-JP');
+  n >= 10_000 ? `${(n / 10_000).toFixed(n >= 1_000_000 ? 0 : 1).replace(/\.0$/, '')}万` : n.toLocaleString('ja-JP');
 
 const c = youtube?.channel;
 const items = c
