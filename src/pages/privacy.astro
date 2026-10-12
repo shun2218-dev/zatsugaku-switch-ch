@@ -1,31 +1,43 @@
 ---
 import Base from '../layouts/Base.astro';
-import { SITE } from '../lib/site';
+import { SITE, GA_ID } from '../lib/site';
+
+// アクセス解析を入れていないビルドでは、その項目を出さずに番号を詰める
+let n = 0;
+const num = () => ++n;
 ---
 <Base title="プライバシーポリシー" description="雑学スイッチ公式サイトのプライバシーポリシーです。">
   <article class="article prose narrow">
     <h1 class="page-title">プライバシーポリシー</h1>
     <p class="meta">最終更新: 2026年10月12日</p>
 
-    <h2>1. 取得する情報</h2>
-    <p>本サイトは、閲覧者の氏名やメールアドレスなどの個人情報を入力していただく機能を持っていません。本サイト自身はCookieを使用していません。お問い合わせは、次項の Google フォームで受け付けています。</p>
+    <h2>{num()}. 取得する情報</h2>
+    <p>本サイトは、閲覧者の氏名やメールアドレスなどの個人情報を入力していただく機能を持っていません。{GA_ID ? '本サイトでは、アクセス解析のために Google アナリティクスの Cookie を使用しています（「アクセス解析」の項をご覧ください）。' : '本サイト自身はCookieを使用していません。'}お問い合わせは、次項の Google フォームで受け付けています。</p>
 
-    <h2>2. お問い合わせフォーム</h2>
+    <h2>{num()}. お問い合わせフォーム</h2>
     <p>お問い合わせには Google フォームを使用しています。お名前（ニックネーム）とメールアドレスの入力は任意で、返信を希望される場合だけご記入いただいています。いただいた内容は、お問い合わせへの返信と、動画・記事の訂正や改善のためにのみ使用し、法令に基づく場合を除いて第三者に提供しません。フォームに入力された情報は Google のサーバーに保存されます。詳しくは <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google プライバシーポリシー</a> をご確認ください。</p>
 
-    <h2>3. ホスティング</h2>
+    <h2>{num()}. ホスティング</h2>
     <p>本サイトは GitHub Pages で配信しています。配信の過程で、GitHub社がアクセス元のIPアドレス等を記録する場合があります。詳しくは <a href="https://docs.github.com/ja/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener">GitHub のプライバシーステートメント</a> をご確認ください。</p>
 
-    <h2>4. YouTube 動画の埋め込み</h2>
+    <h2>{num()}. YouTube 動画の埋め込み</h2>
     <p>記事内の動画は、YouTube のプライバシー強化モードで埋め込んでいます。記事ページを開くと YouTube のプレーヤーが読み込まれ、Google による情報の取り扱いが適用されます。詳しくは <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google プライバシーポリシー</a> をご確認ください。</p>
 
-    <h2>5. 外部サービスへのシェア</h2>
+    {GA_ID && (
+      <>
+        <h2>{num()}. アクセス解析</h2>
+        <p>本サイトでは、どの記事がよく読まれているかを把握してサイトを改善するために、Google LLC のアクセス解析ツール「Google アナリティクス」を使用しています。Google アナリティクスは Cookie を使用して、閲覧したページ、ページを開いたきっかけ（検索・リンク元など）、サイト内でのクリック、おおよその地域、端末やブラウザの種類などの情報を Google に送信します。これらの情報に、氏名など個人を特定する情報は含まれません。</p>
+        <p>送信された情報は Google によって収集・処理されます。詳しくは <a href="https://policies.google.com/technologies/partner-sites?hl=ja" target="_blank" rel="noopener">Google のサービスを使用するサイトやアプリから収集した情報の Google による使用</a> をご確認ください。収集を望まない場合は、ブラウザの設定で Cookie を無効にするか、<a href="https://tools.google.com/dlpage/gaoptout?hl=ja" target="_blank" rel="noopener">Google アナリティクス オプトアウト アドオン</a> を利用して停止できます。</p>
+      </>
+    )}
+
+    <h2>{num()}. 外部サービスへのシェア</h2>
     <p>X や LINE のシェアボタンを押すと、各サービスのページへ移動します。移動先での情報の取り扱いは各サービスの規約に従います。</p>
 
-    <h2>6. 本ポリシーの変更</h2>
-    <p>アクセス解析ツールの導入などにより取り扱いが変わる場合は、このページを更新してお知らせします。</p>
+    <h2>{num()}. 本ポリシーの変更</h2>
+    <p>利用するサービスの追加などにより取り扱いが変わる場合は、このページを更新してお知らせします。</p>
 
-    <h2>7. お問い合わせ</h2>
+    <h2>{num()}. お問い合わせ</h2>
     <p><a href={SITE.contactUrl} target="_blank" rel="noopener">お問い合わせフォーム</a></p>
 
     <p class="meta">動画制作ツール「AutoTube Studio」（YouTube API Services を利用）のプライバシーポリシーは <a href="/autotube/privacy.html">こちら</a>。</p>

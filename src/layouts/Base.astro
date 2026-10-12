@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-import { SITE, subscribeUrl } from '../lib/site';
+import { SITE, GA_ID, subscribeUrl } from '../lib/site';
 import { categories } from '../lib/data';
 import SearchForm from '../components/SearchForm.astro';
 import CategoryIcon from '../components/CategoryIcon.astro';
@@ -12,8 +12,10 @@ interface Props {
   type?: 'website' | 'article';
   jsonLd?: object[];
   noindex?: boolean;
+  /** アクセス解析でページをまとめる区分（記事ページの「詳細記事あり／なし」など） */
+  contentGroup?: string;
 }
-const { title, description = SITE.description, image = '/og-default.jpg', type = 'website', jsonLd = [], noindex = false } = Astro.props;
+const { title, description = SITE.description, image = '/og-default.jpg', type = 'website', jsonLd = [], noindex = false, contentGroup } = Astro.props;
 const fullTitle = title ? `${title}｜${SITE.name}` : `${SITE.name}｜${SITE.tagline}`;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const ogImage = new URL(image, Astro.site);
@@ -39,6 +41,25 @@ const ogImage = new URL(image, Astro.site);
     <meta property="og:locale" content="ja_JP" />
     <meta name="twitter:card" content="summary_large_image" />
     {jsonLd.map((d) => <script type="application/ld+json" set:html={JSON.stringify(d)} />)}
+    {GA_ID && <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}></script>}
+    {GA_ID && (
+      <script is:inline define:vars={{ gaId: GA_ID, contentGroup }}>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', gaId, contentGroup ? { content_group: contentGroup } : {});
+        // data-ga-event のついたリンク・ボタンが押されたらイベントを送る。data-ga-video-id="x" → video_id: "x"
+        document.addEventListener('click', (e) => {
+          const el = e.target instanceof Element && e.target.closest('[data-ga-event]');
+          if (!el) return;
+          const params = {};
+          for (const [k, v] of Object.entries(el.dataset)) {
+            if (k.startsWith('ga') && k !== 'gaEvent') params[k.slice(2).replace(/[A-Z]/g, (c, i) => (i ? '_' : '') + c.toLowerCase())] = v;
+          }
+          gtag('event', el.dataset.gaEvent, params);
+        });
+      </script>
+    )}
   </head>
   <body>
     <header class="site-header">
@@ -51,7 +72,7 @@ const ogImage = new URL(image, Astro.site);
         <a class="header-search-icon" href="/search/" aria-label="雑学を検索">
           <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2.4" /><path d="m16.5 16.5 4.5 4.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" /></svg>
         </a>
-        <a class="btn btn-sub header-sub" href={subscribeUrl} target="_blank" rel="noopener">チャンネル登録</a>
+        <a class="btn btn-sub header-sub" href={subscribeUrl} target="_blank" rel="noopener" data-ga-event="subscribe_click" data-ga-placement="header">チャンネル登録</a>
       </div>
       <nav class="wrap cat-nav" aria-label="カテゴリ">
         {categories.map((c) => <a href={`/category/${c.slug}/`}><CategoryIcon slug={c.slug} />{c.name}</a>)}
@@ -70,7 +91,7 @@ const ogImage = new URL(image, Astro.site);
           <a href="/privacy/">プライバシーポリシー</a>
           <a href="/terms/">利用規約</a>
           <a href={SITE.contactUrl} target="_blank" rel="noopener">お問い合わせ</a>
-          <a href={SITE.channelUrl} target="_blank" rel="noopener">YouTube</a>
+          <a href={SITE.channelUrl} target="_blank" rel="noopener" data-ga-event="channel_click" data-ga-placement="footer">YouTube</a>
         </nav>
         <p class="footer-note">動画と記事はAIを活用して制作し、公開前に運営者が確認しています。</p>
       </div>

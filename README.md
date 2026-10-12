@@ -51,6 +51,7 @@ sources:
 本番: https://zatsugaku-switch.com （GitHub Pages・GitHub Actions でデプロイ）
 
 - main に push すると `.github/workflows/deploy.yml` がビルドし、Variables の `SITE_URL` が登録されていれば Pages に公開する（未登録ならビルドの確認だけ）
+- Variables の `GA_ID`（Google アナリティクス 4 の測定ID、`G-` で始まる）を登録すると、ビルドに計測タグが入り、プライバシーポリシーに「アクセス解析」の項が出る（未登録なら計測しない）
 - 独自ドメインはリポジトリの Settings → Pages → Custom domain で設定する。GitHub Actions で公開する場合、`CNAME` ファイルは使われない（置かなくてよい）
 
 ### DNS（Cloudflare）
