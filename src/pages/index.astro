@@ -19,7 +19,7 @@ const jsonLd = [
     <p class="hero-lead">「なぜハチミツは腐らないの？」「なぜ雷は音が遅れて聞こえるの？」――<br />毎日の「なぜ？」を短い動画と読みもので解き明かします。</p>
     <SearchForm id="hero-q" />
     <div class="hero-actions">
-      <a class="btn btn-sub" href={subscribeUrl} target="_blank" rel="noopener">YouTubeでチャンネル登録</a>
+      <a class="btn btn-sub" href={subscribeUrl} target="_blank" rel="noopener" data-ga-event="subscribe_click" data-ga-placement="hero">YouTubeでチャンネル登録</a>
       <a class="btn btn-ghost-light" href="/trivia/">雑学を読む（{videos.length}本）</a>
     </div>
   </section>

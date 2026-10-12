@@ -7,6 +7,10 @@ export const SITE = {
   contactUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSd17kfMR-RGTlm9WlabCfRjMqN5H1HnwIdzWe2JFuS6hfp3hQ/viewform',
 };
 
+// Google アナリティクス 4 の測定ID。CI では Variables の GA_ID から渡す。未設定（ローカルなど）なら計測しない
+const gaId = import.meta.env.PUBLIC_GA_ID ?? '';
+export const GA_ID = /^G-[A-Z0-9]+$/.test(gaId) ? gaId : '';
+
 export const subscribeUrl = `${SITE.channelUrl}?sub_confirmation=1`;
 
 /** お問い合わせフォームを「内容の誤り」と対象の記事を入れた状態で開くURL */

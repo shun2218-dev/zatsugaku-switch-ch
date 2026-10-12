@@ -57,7 +57,7 @@ const jsonLd = [
   },
 ];
 ---
-<Base title={video.title} description={description} image={thumb(video)} type="article" jsonLd={jsonLd}>
+<Base title={video.title} description={description} image={thumb(video)} type="article" jsonLd={jsonLd} contentGroup={note ? '詳細記事あり' : '詳細記事なし'}>
   <Breadcrumb items={[{ name: 'ホーム', href: '/' }, { name: cat.name, href: `/category/${cat.slug}/` }, { name: video.title }]} />
 
   <article class="article">
@@ -75,7 +75,7 @@ const jsonLd = [
       <div class="answer">
         <p class="answer-label">ひとことで言うと</p>
         <p class="answer-text">{answer ?? video.hook}</p>
-        <a class="btn btn-ghost" href={watchUrl(video)} target="_blank" rel="noopener">YouTubeで見る</a>
+        <a class="btn btn-ghost" href={watchUrl(video)} target="_blank" rel="noopener" data-ga-event="watch_click" data-ga-video-id={video.id}>YouTubeで見る</a>
       </div>
     </div>
 
@@ -110,7 +110,7 @@ const jsonLd = [
 
     <p class="report meta">内容に誤りを見つけたら、<a href={reportUrl(`${video.title}（${url.href}）`)} target="_blank" rel="noopener">お問い合わせフォーム</a>からお知らせください。</p>
 
-    <Share title={video.title} url={url} />
+    <Share title={video.title} url={url} id={video.id} />
     <SubscribeCTA />
   </article>
 
