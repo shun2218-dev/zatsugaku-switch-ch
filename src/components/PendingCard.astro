@@ -1,0 +1,16 @@
+---
+// まだ記事にしていない新着動画のカード。記事が入るまでのつなぎで、YouTube へ直接リンクする
+import type { YouTubeVideo } from '../lib/youtube';
+import { playIconSvg } from '../lib/icons';
+interface Props { video: YouTubeVideo }
+const { video } = Astro.props;
+---
+<a class="card" href={video.url} target="_blank" rel="noopener" data-ga-event="pending_video_click" data-ga-video-id={video.id}>
+  <div class="card-img">
+    <img src={video.thumbnail} alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" />
+  </div>
+  <div class="card-body">
+    <div class="card-meta"><span class="yt-badge"><Fragment set:html={playIconSvg()} />YouTubeで見る</span></div>
+    <h3>{video.title}</h3>
+  </div>
+</a>

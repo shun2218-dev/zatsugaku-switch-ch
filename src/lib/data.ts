@@ -1,6 +1,7 @@
 import videosJson from '../data/videos.json';
 import { CATEGORIES as CATEGORY_RULES } from '../../scripts/categories.mjs';
 import { norm, contentBigrams } from './normalize';
+import { youtube, cardThumbnail } from './youtube';
 
 export type Scene = { text: string; alt: string; image: string | null };
 export type Video = {
@@ -22,7 +23,9 @@ export type Note = {
   rawContent: () => string;
 };
 
-export const videos = videosJson as Video[];
+// 再生数は書き出し時点の値。ビルド時に YouTube から公開値を取れたらそちらを使う（人気順を最新にする）
+const liveViews = new Map(youtube?.videos.map((v) => [v.id, v.views]));
+export const videos = (videosJson as Video[]).map((v) => ({ ...v, views: liveViews.get(v.id) ?? v.views }));
 
 export const categories = CATEGORY_RULES.map(({ slug, name }) => ({
   slug,
@@ -39,6 +42,19 @@ export const hasNote = (id: string) => noteOf(id) !== undefined;
 
 export const popular = [...videos].sort((a, b) => b.views - a.views);
 export const latest = videos; // 書き出し時点で新しい順
+
+// まだ書き出していない（記事のない）公開動画。pnpm sync で記事が入るまでのあいだ、新着に YouTube へのリンクとして出す。
+// YTAutomator が公開状態を DB に取り込むのが遅れることがあるので、書き出し済みの最新より少し前（7日）から拾う。
+// それより古いものは YTAutomator 以外で上げた動画とみなして出さない
+const PENDING_MARGIN_MS = 7 * 86400_000;
+const exportedIds = new Set(videos.map((v) => v.id));
+const newestExported = Math.max(...videos.map((v) => Date.parse(v.publishedAt)));
+export const pending = await Promise.all(
+  (youtube?.videos ?? [])
+    .filter((v) => !exportedIds.has(v.id) && Date.parse(v.publishedAt) > newestExported - PENDING_MARGIN_MS)
+    .sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt))
+    .map(async (v) => ({ ...v, thumbnail: await cardThumbnail(v) })),
+);
 
 // チャンネル名・シリーズ名など、話題を表さないタグ
 const GENERIC_TAG = /雑学|豆知識|^なぜ|通勤|疑問|シリーズ|^科学$|日常の?科学/;

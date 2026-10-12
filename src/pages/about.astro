@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import SubscribeCTA from '../components/SubscribeCTA.astro';
+import ChannelStats from '../components/ChannelStats.astro';
 import { SITE } from '../lib/site';
 ---
 <Base title="このサイトについて" description="雑学スイッチのコンセプト、AIを活用した制作の流れ、内容の正確さについての方針をまとめています。">
@@ -10,6 +11,7 @@ import { SITE } from '../lib/site';
     <h2>雑学スイッチとは</h2>
     <p>「雑学スイッチ」は、身のまわりの「なぜ？」を30秒ほどのショート動画で解き明かすYouTubeチャンネルです。空や天気、食べもの、からだ、身近な道具のしくみなど、知ると誰かに話したくなる雑学を毎日お届けしています。</p>
     <p>このサイトでは、動画で紹介した雑学を読みものとしてまとめ、動画では伝えきれなかった補足や出典をあわせて紹介しています。</p>
+    <ChannelStats />
 
     <h2>AIを活用した制作について</h2>
     <p>動画の企画・台本・ナレーション音声・イラストは、AI（大規模言語モデル・音声合成・画像生成）を活用して制作しています。サイトの記事も、動画の台本をもとにAIで作成しています。</p>
