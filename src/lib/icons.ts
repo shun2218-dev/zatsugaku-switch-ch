@@ -26,3 +26,7 @@ export function iconSvg(slug: string, className = 'icon') {
 // 詳細記事（もう少し詳しく・出典）があることを示すアイコン: 文字の入った書類
 export const noteIconSvg = (className = 'icon') =>
   svg('<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/>', className);
+
+// YouTube で再生することを示すアイコン: 角丸の画面と再生マーク
+export const playIconSvg = (className = 'icon') =>
+  svg('<rect x="2.5" y="5" width="19" height="14" rx="4"/><path d="M10 9.2v5.6l4.8-2.8z"/>', className);
