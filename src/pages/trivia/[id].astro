@@ -6,7 +6,7 @@ import Share from '../../components/Share.astro';
 import Breadcrumb from '../../components/Breadcrumb.astro';
 import CategoryIcon from '../../components/CategoryIcon.astro';
 import SubscribeCTA from '../../components/SubscribeCTA.astro';
-import { SITE } from '../../lib/site';
+import { SITE, reportUrl } from '../../lib/site';
 import { videos, type Video, categoryOf, noteOf, related, plainText, thumb, watchUrl, displayTags, searchUrl } from '../../lib/data';
 
 export function getStaticPaths() {
@@ -109,6 +109,8 @@ const jsonLd = [
         {note?.frontmatter.reviewedAt && <p class="meta">最終確認日: {note.frontmatter.reviewedAt}</p>}
       </section>
     )}
+
+    <p class="report meta">内容に誤りを見つけたら、<a href={reportUrl(`${video.title}（${url.href}）`)} target="_blank" rel="noopener">お問い合わせフォーム</a>からお知らせください。</p>
 
     <Share title={video.title} url={url} />
     <SubscribeCTA />
