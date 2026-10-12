@@ -35,6 +35,7 @@ export const categoryOf = (slug: string) => categories.find((c) => c.slug === sl
 // 動画ごとの加筆（もう少し詳しく・出典）。src/notes/<動画ID>.md があれば記事に差し込む
 const noteModules = import.meta.glob<Note>('../notes/*.md', { eager: true });
 export const noteOf = (id: string): Note | undefined => noteModules[`../notes/${id}.md`];
+export const hasNote = (id: string) => noteOf(id) !== undefined;
 
 export const popular = [...videos].sort((a, b) => b.views - a.views);
 export const latest = videos; // 書き出し時点で新しい順

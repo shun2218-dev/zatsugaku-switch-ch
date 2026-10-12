@@ -1,11 +1,13 @@
 ---
 import Base from '../layouts/Base.astro';
 import SearchForm from '../components/SearchForm.astro';
+import NoteFilter from '../components/NoteFilter.astro';
 import { topTags, searchUrl } from '../lib/data';
 ---
 <Base title="雑学を検索" description="雑学スイッチの雑学をキーワードで検索できます。" noindex>
   <h1 class="page-title">雑学を検索</h1>
   <SearchForm id="search-page-q" class="search-page" autofocus />
+  <NoteFilter />
 
   <div id="search-status" class="search-status" aria-live="polite"></div>
   <div id="search-results" class="grid search-results"></div>
@@ -20,9 +22,10 @@ import { topTags, searchUrl } from '../lib/data';
 
 <script>
   import { norm } from '../lib/normalize';
-  import { iconSvg } from '../lib/icons';
+  import { iconSvg, noteIconSvg } from '../lib/icons';
+  import { NOTE_FILTERS, matchesNote, type NoteFilter } from '../lib/noteFilter';
 
-  type Entry = { id: string; t: string; c: string; k: string; g: string[]; h: string; b: string; i: string; l: number; v: number };
+  type Entry = { id: string; t: string; c: string; k: string; g: string[]; h: string; b: string; i: string; l: number; n: number; v: number };
 
   const esc = (s: string) => s.replace(/[&<>"']/g, (ch) => `&#${ch.charCodeAt(0)};`);
 
@@ -30,6 +33,9 @@ import { topTags, searchUrl } from '../lib/data';
   const status = document.querySelector<HTMLElement>('#search-status')!;
   const results = document.querySelector<HTMLElement>('#search-results')!;
   const suggest = document.querySelector<HTMLElement>('#search-suggest')!;
+  const filterBox = document.querySelector<HTMLElement>('[data-note-filter]')!;
+  const noteFilter = () => (filterBox.querySelector<HTMLInputElement>('input:checked')?.value ?? 'all') as NoteFilter;
+  const filterLabel = (f: NoteFilter) => `詳細記事${NOTE_FILTERS.find((o) => o.value === f)!.label}`;
 
   let index: (Entry & { nt: string; ng: string; nh: string; nb: string })[] = [];
 
@@ -58,15 +64,26 @@ import { topTags, searchUrl } from '../lib/data';
     return html + (end < e.b.length ? '…' : '');
   }
 
+  // 絞り込みボタンの件数を、いまの検索語に当てはまる雑学の数にそろえる
+  function updateCounts(entries: Entry[]) {
+    for (const { value } of NOTE_FILTERS) {
+      const el = filterBox.querySelector<HTMLElement>(`[data-count="${value}"]`);
+      if (el) el.textContent = String(entries.filter((e) => matchesNote(e.n === 1, value)).length);
+    }
+  }
+
   function search(q: string) {
     const terms = norm(q).split(/[\s　]+/).filter(Boolean);
-    suggest.hidden = terms.length > 0;
-    if (!terms.length) {
+    const f = noteFilter();
+    // 検索語がなくても「あり」「なし」を選んだら、当てはまる雑学をすべて出す
+    suggest.hidden = terms.length > 0 || f !== 'all';
+    if (!terms.length && f === 'all') {
       status.textContent = '';
       results.innerHTML = '';
+      updateCounts(index);
       return;
     }
-    const hits = index
+    const matched = index
       .map((e) => {
         let score = 0;
         for (const t of terms) {
@@ -78,14 +95,19 @@ import { topTags, searchUrl } from '../lib/data';
       })
       .filter((r): r is { e: (typeof index)[number]; score: number } => r !== null)
       .sort((a, b) => b.score - a.score || b.e.v - a.e.v);
+    updateCounts(matched.map((r) => r.e));
+    const hits = matched.filter((r) => matchesNote(r.e.n === 1, f));
 
-    status.textContent = hits.length ? `「${q}」の雑学 ${hits.length}本` : `「${q}」に当てはまる雑学は見つかりませんでした。別のことばで探してみてください。`;
+    if (!terms.length) status.textContent = `${filterLabel(f)}の雑学 ${hits.length}本`;
+    else if (hits.length) status.textContent = `「${q}」の雑学 ${hits.length}本${f === 'all' ? '' : `（${filterLabel(f)}）`}`;
+    else if (matched.length) status.textContent = `「${q}」の雑学のうち、${filterLabel(f)}のものは見つかりませんでした。`;
+    else status.textContent = `「${q}」に当てはまる雑学は見つかりませんでした。別のことばで探してみてください。`;
     results.innerHTML = hits
       .map(
         ({ e }) => `
         <a class="card" href="/trivia/${e.id}/">
           <div class="card-img"><img src="${e.i}" alt="" loading="lazy" decoding="async" width="720" height="1260" />${e.l ? '<span class="badge">じっくり解説</span>' : ''}</div>
-          <div class="card-body"><span class="card-cat">${iconSvg(e.k)}${esc(e.c)}</span><h3>${esc(e.t)}</h3><p class="card-snippet">${snippet(e, terms)}</p></div>
+          <div class="card-body"><div class="card-meta"><span class="card-cat">${iconSvg(e.k)}${esc(e.c)}</span>${e.n ? `<span class="note-badge">${noteIconSvg()}詳細記事</span>` : ''}</div><h3>${esc(e.t)}</h3><p class="card-snippet">${snippet(e, terms)}</p></div>
         </a>`,
       )
       .join('');
@@ -101,13 +123,15 @@ import { topTags, searchUrl } from '../lib/data';
   }
 
   input.value = new URLSearchParams(location.search).get('q') ?? '';
-  status.textContent = input.value ? '読み込み中…' : '';
+  status.textContent = input.value || noteFilter() !== 'all' ? '読み込み中…' : '';
   fetch('/search-index.json')
     .then((r) => r.json())
     .then((data: Entry[]) => {
       index = data.map((e) => ({ ...e, nt: norm(e.t), ng: norm(e.g.join(' ')), nh: norm(e.h), nb: norm(e.b) }));
       search(input.value.trim());
     });
+
+  filterBox.addEventListener('change', () => search(input.value.trim()));
 
   let timer: number | undefined;
   input.addEventListener('input', () => {
