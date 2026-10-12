@@ -148,14 +148,24 @@ main { padding-block: 24px 48px; }
 /* ---- search ---- */
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .header-inner { gap: 16px; }
-.search-form { display: flex; align-items: center; background: #fff; border-radius: 999px; padding: 2px 4px 2px 16px; border: 2px solid var(--line); }
-.search-form:focus-within { border-color: var(--amber); }
-.search-form input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; font: inherit; font-size: 16px; color: var(--ink); padding: .45em 0; }
-.search-form input::-webkit-search-cancel-button { cursor: pointer; }
-.search-form button { flex: none; display: grid; place-items: center; width: 36px; height: 36px; border: 0; border-radius: 50%; background: var(--navy); color: var(--amber); cursor: pointer; }
-.header-search { flex: 1; max-width: 420px; margin-left: auto; border-color: transparent; }
-.header-search input { font-size: .9rem; padding: .3em 0; }
-.header-search button { width: 30px; height: 30px; }
+/* 入力欄と検索ボタンは分けて並べる（ボタンは入力欄の右隣） */
+.search-form { display: flex; align-items: center; gap: 8px; }
+.search-form input { flex: 1; min-width: 0; height: 44px; padding: 0 18px; border: 2px solid var(--line); border-radius: 999px; background: #fff; font: inherit; font-size: 16px; color: var(--ink); outline: 0; -webkit-appearance: none; appearance: none; }
+.search-form input::placeholder { color: var(--muted); opacity: 1; }
+.search-form input:focus { border-color: var(--amber); }
+/* ブラウザ標準の「×」（入力クリア）は出さない */
+.search-form input::-webkit-search-cancel-button,
+.search-form input::-webkit-search-decoration { -webkit-appearance: none; appearance: none; display: none; }
+.search-form button { flex: none; display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: 50%; background: var(--navy); color: #fff; cursor: pointer; transition: background .15s, color .15s; }
+.search-form button:hover { background: var(--navy-2); }
+.search-form button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
+/* 紺の背景の上（ヘッダー・トップの大見出し）では、ボタンを半透明の白にしてチャンネル登録ボタンと競わせない */
+.header-search input, .hero .search-form input { border-color: transparent; }
+.header-search button, .hero .search-form button { background: rgb(255 255 255 / .14); color: #fff; }
+.header-search button:hover, .hero .search-form button:hover { background: var(--amber); color: var(--navy); }
+.header-search { flex: 1; max-width: 420px; margin-left: auto; }
+.header-search input { height: 38px; padding: 0 16px; font-size: .9rem; }
+.header-search button { width: 38px; height: 38px; }
 .header-search-icon { display: none; color: #fff; margin-left: auto; padding: 6px; }
 @media (max-width: 639px) {
   .header-search { display: none; }
@@ -163,7 +173,7 @@ main { padding-block: 24px 48px; }
   .header-inner { gap: 4px; }
 }
 .search-page { max-width: 640px; margin-bottom: 24px; }
-.hero .search-form { max-width: 520px; margin-bottom: 20px; border-color: transparent; }
+.hero .search-form { max-width: 520px; margin-bottom: 20px; }
 .search-status { margin: 20px 0 16px; color: var(--muted); font-weight: 700; }
 .search-status:empty { display: none; }
 .card-snippet { margin: 6px 0 0; font-size: .8rem; line-height: 1.6; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
