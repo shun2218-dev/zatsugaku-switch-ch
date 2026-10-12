@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import SubscribeCTA from '../components/SubscribeCTA.astro';
+import { SITE } from '../lib/site';
 ---
 <Base title="このサイトについて" description="雑学スイッチのコンセプト、AIを活用した制作の流れ、内容の正確さについての方針をまとめています。">
   <article class="article prose narrow">
@@ -18,7 +19,11 @@ import SubscribeCTA from '../components/SubscribeCTA.astro';
     <ul>
       <li>記事の「出典・参考資料」には、公的機関・学術論文・辞書など、できるだけ一次情報に近い資料を載せるようにしています。</li>
       <li>広く知られていても根拠がはっきりしない話は、その旨を記事中で補足します。</li>
+      <li>誤りに気づかれた方は、<a href={SITE.contactUrl} target="_blank" rel="noopener">お問い合わせフォーム</a>からお知らせください。確認のうえ訂正します。</li>
     </ul>
+
+    <h2>運営者・お問い合わせ</h2>
+    <p>個人で運営しています。ご意見・ご感想、取り上げてほしい「なぜ？」のリクエストは、<a href={SITE.contactUrl} target="_blank" rel="noopener">お問い合わせフォーム</a>からお送りください。</p>
   </article>
   <SubscribeCTA />
 </Base>
