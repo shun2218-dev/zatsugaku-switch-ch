@@ -23,6 +23,7 @@ export const GET: APIRoute = () => {
       b: [plainText(v), note ? stripMarkdown(note.rawContent()) : ''].join(' '),
       i: thumb(v),
       l: v.format === 'longform' ? 1 : 0,
+      n: note ? 1 : 0,
       v: v.views,
     };
   });

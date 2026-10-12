@@ -16,6 +16,13 @@ const PATHS: Record<string, string> = {
     '<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.7.5 1.1 1.3 1.1 2.1V16h5v-.1c0-.8.4-1.6 1.1-2.1A6 6 0 0 0 12 3z"/>',
 };
 
+const svg = (paths: string, className: string) =>
+  `<svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
+
 export function iconSvg(slug: string, className = 'icon') {
-  return `<svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${PATHS[slug] ?? PATHS.things}</svg>`;
+  return svg(PATHS[slug] ?? PATHS.things, className);
 }
+
+// 詳細記事（もう少し詳しく・出典）があることを示すアイコン: 文字の入った書類
+export const noteIconSvg = (className = 'icon') =>
+  svg('<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/>', className);

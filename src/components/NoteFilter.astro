@@ -1,0 +1,51 @@
+---
+// 詳細記事の有無で一覧を絞り込むボタン。videos を渡すと件数を出し、data-note-grid の中のカードを隠す
+// 検索ページは videos を渡さず、件数と絞り込みを自分のスクリプトで行う
+import { type Video, hasNote } from '../lib/data';
+import { NOTE_FILTERS } from '../lib/noteFilter';
+interface Props { videos?: Video[] }
+const { videos } = Astro.props;
+const count = (value: string) =>
+  videos && (value === 'all' ? videos.length : videos.filter((v) => hasNote(v.id) === (value === 'yes')).length);
+---
+<div class="note-filter" role="radiogroup" aria-labelledby="note-filter-label" data-note-filter>
+  <span id="note-filter-label" class="note-filter-label">詳細記事</span>
+  {NOTE_FILTERS.map(({ value, label }) => (
+    <label class="note-filter-opt">
+      <input type="radio" name="note" value={value} checked={value === 'all'} />
+      <span class="note-filter-chip">{label}<span class="note-filter-count" data-count={value}>{count(value)}</span></span>
+    </label>
+  ))}
+</div>
+<p class="note-filter-empty" data-note-empty hidden>この条件に当てはまる雑学はまだありません。</p>
+
+<script>
+  import { readNoteFilter, matchesNote, type NoteFilter } from '../lib/noteFilter';
+
+  const box = document.querySelector<HTMLElement>('[data-note-filter]');
+  const empty = document.querySelector<HTMLElement>('[data-note-empty]');
+  const cards = [...document.querySelectorAll<HTMLElement>('[data-note-grid] .card')];
+
+  function apply(f: NoteFilter) {
+    let shown = 0;
+    for (const c of cards) {
+      c.hidden = !matchesNote(c.dataset.note === '1', f);
+      if (!c.hidden) shown++;
+    }
+    if (empty && cards.length) empty.hidden = shown > 0;
+  }
+
+  if (box) {
+    const initial = readNoteFilter();
+    for (const r of box.querySelectorAll<HTMLInputElement>('input')) r.checked = r.value === initial;
+    apply(initial);
+    box.addEventListener('change', (ev) => {
+      const f = (ev.target as HTMLInputElement).value as NoteFilter;
+      const url = new URL(location.href);
+      if (f === 'all') url.searchParams.delete('note');
+      else url.searchParams.set('note', f);
+      history.replaceState(null, '', url);
+      apply(f);
+    });
+  }
+</script>

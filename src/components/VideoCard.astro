@@ -1,17 +1,24 @@
 ---
-import { type Video, thumb, categoryOf } from '../lib/data';
+import { type Video, thumb, categoryOf, hasNote } from '../lib/data';
+import { noteIconSvg } from '../lib/icons';
 import CategoryIcon from './CategoryIcon.astro';
 interface Props { video: Video; showCategory?: boolean }
 const { video, showCategory = true } = Astro.props;
 const cat = categoryOf(video.category);
+const note = hasNote(video.id);
 ---
-<a class="card" href={`/trivia/${video.id}/`}>
+<a class="card" href={`/trivia/${video.id}/`} data-note={note ? '1' : '0'}>
   <div class="card-img">
     <img src={thumb(video)} alt="" loading="lazy" decoding="async" width="720" height="1260" />
     {video.format === 'longform' && <span class="badge">じっくり解説</span>}
   </div>
   <div class="card-body">
-    {showCategory && <span class="card-cat"><CategoryIcon slug={cat.slug} />{cat.name}</span>}
+    {(showCategory || note) && (
+      <div class="card-meta">
+        {showCategory && <span class="card-cat"><CategoryIcon slug={cat.slug} />{cat.name}</span>}
+        {note && <span class="note-badge"><Fragment set:html={noteIconSvg()} />詳細記事</span>}
+      </div>
+    )}
     <h3>{video.title}</h3>
   </div>
 </a>
