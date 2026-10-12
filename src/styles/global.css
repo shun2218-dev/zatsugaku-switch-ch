@@ -111,7 +111,12 @@ main { padding-block: 24px 48px; }
 .scenes li img { width: 64px; aspect-ratio: 9 / 16; object-fit: cover; border-radius: 8px; }
 .scenes li img.wide { aspect-ratio: 16 / 9; }
 .scenes li p { margin: 0; }
-.scenes li p::before { content: counter(scene); display: inline-grid; place-items: center; width: 1.6em; height: 1.6em; margin-right: .5em; border-radius: 50%; background: var(--navy); color: var(--amber); font-size: .8rem; font-weight: 700; vertical-align: .1em; }
+.scenes li p::before { content: counter(scene); display: inline-grid; place-items: center; width: 1.6em; height: 1.6em; margin-right: .5em; border-radius: 50%; background: var(--navy); color: var(--amber); font-size: .8rem; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; vertical-align: .1em; }
+.scenes-box > summary { list-style: none; cursor: pointer; }
+.scenes-box > summary::-webkit-details-marker { display: none; }
+.scenes-box > summary h2 { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.scenes-box > summary h2::after { content: ''; flex: none; width: .5em; height: .5em; margin-right: .3em; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: translateY(-25%) rotate(45deg); transition: transform .2s; }
+.scenes-box[open] > summary h2::after { transform: translateY(25%) rotate(-135deg); }
 
 .prose h3 { font-size: 1.08rem; margin: 28px 0 8px; }
 .prose ul { padding-left: 1.3em; }
