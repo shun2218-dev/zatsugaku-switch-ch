@@ -30,13 +30,15 @@ h1, h2, h3 { line-height: 1.4; word-break: auto-phrase; }
 
 /* ---- header ---- */
 .site-header { background: var(--navy); color: #fff; position: sticky; top: 0; z-index: 10; }
-.header-inner { display: flex; align-items: center; justify-content: space-between; padding-block: 10px; }
-.logo { display: flex; align-items: center; gap: 10px; color: var(--amber); text-decoration: none; font-weight: 800; font-size: 1.25rem; letter-spacing: .02em; }
-.logo img { border-radius: 50%; }
-.header-sub { padding: .45em 1em; font-size: .85rem; }
-.cat-nav { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
+/* 上の行の部品（ロゴ・検索欄・検索ボタン・登録ボタン）は高さ --header-ctl でそろえる */
+.site-header { --header-ctl: 40px; }
+.header-inner { display: flex; align-items: center; justify-content: space-between; padding-block: 12px 10px; }
+.logo { display: flex; align-items: center; gap: 10px; color: var(--amber); text-decoration: none; font-weight: 800; font-size: 1.3rem; line-height: 1; letter-spacing: .02em; white-space: nowrap; }
+.logo img { width: var(--header-ctl); height: var(--header-ctl); border-radius: 50%; }
+.header-sub { gap: 0; height: var(--header-ctl); padding: 0 1.2em; font-size: .88rem; white-space: nowrap; }
+.cat-nav { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 12px; scrollbar-width: none; }
 .cat-nav::-webkit-scrollbar { display: none; }
-.cat-nav a { flex: none; display: inline-flex; align-items: center; gap: .35em; color: #dfe5f2; text-decoration: none; font-size: .85rem; padding: .25em .8em; border-radius: 999px; background: rgb(255 255 255 / .08); }
+.cat-nav a { flex: none; display: inline-flex; align-items: center; gap: .4em; height: 32px; color: #dfe5f2; text-decoration: none; font-size: .85rem; padding: 0 .95em; border-radius: 999px; background: rgb(255 255 255 / .08); }
 .cat-nav a:hover { background: rgb(255 255 255 / .18); color: #fff; }
 
 main { padding-block: 24px 48px; }
@@ -184,14 +186,20 @@ main { padding-block: 24px 48px; }
 .header-search button, .hero .search-form button { background: rgb(255 255 255 / .14); color: #fff; }
 .header-search button:hover, .hero .search-form button:hover { background: var(--amber); color: var(--navy); }
 .header-search { flex: 1; max-width: 420px; margin-left: auto; }
-.header-search input { height: 38px; padding: 0 16px; font-size: .9rem; }
-.header-search button { width: 38px; height: 38px; }
-.header-search-icon { display: none; color: #fff; margin-left: auto; padding: 6px; }
+.header-search input { height: var(--header-ctl); padding: 0 18px; font-size: .9rem; }
+.header-search button { width: var(--header-ctl); height: var(--header-ctl); }
+.header-search-icon { display: none; place-items: center; width: var(--header-ctl); height: var(--header-ctl); color: #fff; margin-left: auto; }
 @media (max-width: 639px) {
+  .site-header { --header-ctl: 36px; }
+  .logo { gap: 8px; font-size: 1.15rem; }
+  .header-sub { padding: 0 1em; font-size: .8rem; }
   .header-search { display: none; }
   .header-search-icon { display: grid; }
   .header-inner { gap: 4px; }
+  .logo, .header-search-icon, .header-sub { flex: none; }
 }
+/* 小さい画面では登録ボタンを「登録」だけにして1行に収める */
+@media (max-width: 359px) { .header-sub-long { display: none; } }
 .search-page { max-width: 640px; margin-bottom: 24px; }
 .hero .search-form { max-width: 520px; margin-bottom: 20px; }
 .search-status { margin: 20px 0 16px; color: var(--muted); font-weight: 700; }

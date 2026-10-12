@@ -72,7 +72,7 @@ const ogImage = new URL(image, Astro.site);
         <a class="header-search-icon" href="/search/" aria-label="雑学を検索">
           <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2.4" /><path d="m16.5 16.5 4.5 4.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" /></svg>
         </a>
-        <a class="btn btn-sub header-sub" href={subscribeUrl} target="_blank" rel="noopener" data-ga-event="subscribe_click" data-ga-placement="header">チャンネル登録</a>
+        <a class="btn btn-sub header-sub" href={subscribeUrl} target="_blank" rel="noopener" data-ga-event="subscribe_click" data-ga-placement="header"><span class="header-sub-long">チャンネル</span>登録</a>
       </div>
       <nav class="wrap cat-nav" aria-label="カテゴリ">
         {categories.map((c) => <a href={`/category/${c.slug}/`}><CategoryIcon slug={c.slug} />{c.name}</a>)}
