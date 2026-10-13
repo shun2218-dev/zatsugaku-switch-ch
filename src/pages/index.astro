@@ -15,8 +15,8 @@ const newPending = pending.slice(0, NEW_COUNT);
 const newLatest = latest.slice(0, NEW_COUNT - newPending.length);
 
 const jsonLd = [
-  { '@context': 'https://schema.org', '@type': 'WebSite', name: SITE.name, url: Astro.site?.href, inLanguage: 'ja' },
-  { '@context': 'https://schema.org', '@type': 'Organization', name: SITE.name, url: Astro.site?.href, logo: new URL('/apple-touch-icon.png', Astro.site).href, sameAs: [SITE.channelUrl] },
+  { '@context': 'https://schema.org', '@type': 'WebSite', name: SITE.name, alternateName: SITE.alternateName, url: Astro.site?.href, inLanguage: 'ja' },
+  { '@context': 'https://schema.org', '@type': 'Organization', name: SITE.name, alternateName: SITE.alternateName, url: Astro.site?.href, logo: new URL('/apple-touch-icon.png', Astro.site).href, sameAs: [SITE.channelUrl] },
 ];
 ---
 <Base jsonLd={jsonLd}>
