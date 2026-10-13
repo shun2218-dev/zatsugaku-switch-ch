@@ -15,7 +15,8 @@ interface Props {
   contentGroup?: string;
 }
 const { title, description = SITE.description, image = '/og-default.jpg', type = 'website', jsonLd = [], noindex = false, contentGroup } = Astro.props;
-const fullTitle = title ? `${title}｜${SITE.name}` : `${SITE.name}｜${SITE.tagline}`;
+// トップは「雑学スイッチ 公式サイト」で名前を探す人に合わせる。ほかのページは「<ページ名>｜雑学スイッチ」
+const fullTitle = title ? `${title}｜${SITE.name}` : `${SITE.name} 公式サイト｜${SITE.tagline}`;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const ogImage = new URL(image, Astro.site);
 ---

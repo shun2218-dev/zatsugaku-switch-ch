@@ -5,6 +5,20 @@ import Base from '../layouts/Base.astro';
   <div class="notfound">
     <h1 class="page-title">ページが見つかりません</h1>
     <p>お探しのページは移動または削除された可能性があります。</p>
+    <p class="notfound-video" data-video hidden>
+      公開されたばかりの雑学の記事は、準備ができしだい掲載します。動画は <a data-video-link href="#" target="_blank" rel="noopener">YouTubeで見られます</a>。
+    </p>
     <p><a class="btn btn-sub" href="/">トップページへ</a></p>
   </div>
 </Base>
+
+<script>
+  // 動画の概要欄からのリンク（/trivia/<動画ID>/）で、まだページができていないときは YouTube へ案内する
+  const m = location.pathname.match(/^\/trivia\/([\w-]{11})\/?$/);
+  const box = document.querySelector<HTMLElement>('[data-video]');
+  const link = document.querySelector<HTMLAnchorElement>('[data-video-link]');
+  if (m && box && link) {
+    link.href = `https://www.youtube.com/watch?v=${m[1]}`;
+    box.hidden = false;
+  }
+</script>
