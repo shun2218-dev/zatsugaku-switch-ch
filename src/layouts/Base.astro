@@ -3,7 +3,6 @@ import '../styles/global.css';
 import { SITE, GA_ID, subscribeUrl } from '../lib/site';
 import { categories } from '../lib/data';
 import SearchForm from '../components/SearchForm.astro';
-import CategoryIcon from '../components/CategoryIcon.astro';
 
 interface Props {
   title?: string;
@@ -72,11 +71,8 @@ const ogImage = new URL(image, Astro.site);
         <a class="header-search-icon" href="/search/" aria-label="雑学を検索">
           <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2.4" /><path d="m16.5 16.5 4.5 4.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" /></svg>
         </a>
-        <a class="btn btn-sub header-sub" href={subscribeUrl} target="_blank" rel="noopener" data-ga-event="subscribe_click" data-ga-placement="header">チャンネル登録</a>
+        <a class="btn btn-sub header-sub" href={subscribeUrl} target="_blank" rel="noopener" data-ga-event="subscribe_click" data-ga-placement="header"><span class="header-sub-long">チャンネル</span>登録</a>
       </div>
-      <nav class="wrap cat-nav" aria-label="カテゴリ">
-        {categories.map((c) => <a href={`/category/${c.slug}/`}><CategoryIcon slug={c.slug} />{c.name}</a>)}
-      </nav>
     </header>
     <main class="wrap">
       <slot />
@@ -84,6 +80,9 @@ const ogImage = new URL(image, Astro.site);
     <footer class="site-footer">
       <div class="wrap">
         <p class="footer-brand">{SITE.name}<span>{SITE.tagline}</span></p>
+        <nav aria-label="カテゴリ" class="footer-cats">
+          {categories.map((c) => <a href={`/category/${c.slug}/`}>{c.name}</a>)}
+        </nav>
         <nav>
           <a href="/trivia/">雑学一覧</a>
           <a href="/search/">雑学を検索</a>

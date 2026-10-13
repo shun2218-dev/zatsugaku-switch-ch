@@ -9,7 +9,7 @@ const count = (value: string) =>
   videos && (value === 'all' ? videos.length : videos.filter((v) => hasNote(v.id) === (value === 'yes')).length);
 ---
 <div class="note-filter" role="radiogroup" aria-labelledby="note-filter-label" data-note-filter>
-  <span id="note-filter-label" class="note-filter-label">詳細記事</span>
+  <span id="note-filter-label" class="filter-label">詳細記事</span>
   {NOTE_FILTERS.map(({ value, label }) => (
     <label class="note-filter-opt">
       <input type="radio" name="note" value={value} checked={value === 'all'} />
