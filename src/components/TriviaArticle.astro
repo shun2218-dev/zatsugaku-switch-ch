@@ -1,19 +1,17 @@
 ---
-import Base from '../../layouts/Base.astro';
-import VideoCard from '../../components/VideoCard.astro';
-import YouTubeEmbed from '../../components/YouTubeEmbed.astro';
-import Share from '../../components/Share.astro';
-import Breadcrumb from '../../components/Breadcrumb.astro';
-import CategoryIcon from '../../components/CategoryIcon.astro';
-import SubscribeCTA from '../../components/SubscribeCTA.astro';
-import { SITE, reportUrl } from '../../lib/site';
-import { videos, type Video, categoryOf, noteOf, related, plainText, thumb, watchUrl, displayTags, searchUrl } from '../../lib/data';
+import Base from '../layouts/Base.astro';
+import VideoCard from './VideoCard.astro';
+import YouTubeEmbed from './YouTubeEmbed.astro';
+import Share from './Share.astro';
+import Breadcrumb from './Breadcrumb.astro';
+import CategoryIcon from './CategoryIcon.astro';
+import SubscribeCTA from './SubscribeCTA.astro';
+import { SITE, reportUrl } from '../lib/site';
+import { type Video, categoryOf, noteOf, related, plainText, thumb, watchUrl, displayTags, searchUrl } from '../lib/data';
 
-export function getStaticPaths() {
-  return videos.map((video) => ({ params: { id: video.id }, props: { video } }));
-}
-
-const { video } = Astro.props as { video: Video };
+// 雑学の記事ページ（/trivia/<動画ID>/）。ルートは pages/trivia/[id].astro
+interface Props { video: Video }
+const { video } = Astro.props;
 const cat = categoryOf(video.category);
 const note = noteOf(video.id);
 const answer = note?.frontmatter.answer;

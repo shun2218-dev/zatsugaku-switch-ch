@@ -17,6 +17,12 @@ const latest = (dates) => dates.reduce((a, b) => (new Date(b) > new Date(a) ? b 
 const articleDate = new Map(videos.map((v) => [v.id, latest([v.publishedAt, reviewedAt.get(v.id) ?? v.publishedAt])]));
 const newest = (list) => (list.length ? new Date(latest(list.map((v) => articleDate.get(v.id)))).toISOString() : undefined);
 
+// 書き出し済みの記事か。/trivia/<動画ID>/ のうち記事でないもの（準備中の仮ページ）はサイトマップに載せない
+export function isPendingPage(url) {
+  const m = new URL(url).pathname.match(/^\/trivia\/([^/]+)\/$/);
+  return Boolean(m) && !articleDate.has(m[1]);
+}
+
 export function lastmodOf(url) {
   const path = new URL(url).pathname;
   const trivia = path.match(/^\/trivia\/([^/]+)\/$/);

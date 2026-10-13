@@ -1,0 +1,18 @@
+---
+// 雑学の記事ページ。書き出し済みの動画は記事、まだ書き出していない公開動画は「準備中」の仮ページ
+// （動画の概要欄から記事URLへリンクしているので、pnpm sync までのあいだ404にしない）
+import TriviaArticle from '../../components/TriviaArticle.astro';
+import PendingArticle from '../../components/PendingArticle.astro';
+import { videos, pending, type Video } from '../../lib/data';
+import type { YouTubeVideo } from '../../lib/youtube';
+
+export function getStaticPaths() {
+  return [
+    ...videos.map((video) => ({ params: { id: video.id }, props: { video } })),
+    ...pending.map((video) => ({ params: { id: video.id }, props: { pendingVideo: video } })),
+  ];
+}
+
+const { video, pendingVideo } = Astro.props as { video?: Video; pendingVideo?: YouTubeVideo };
+---
+{video ? <TriviaArticle video={video} /> : <PendingArticle video={pendingVideo!} />}

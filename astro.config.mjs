@@ -1,6 +1,6 @@
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
-import { lastmodOf } from './scripts/lastmod.mjs';
+import { lastmodOf, isPendingPage } from './scripts/lastmod.mjs';
 
 // 本番は https://zatsugaku-switch.com（CI では Variables の SITE_URL で上書きできる）
 export default defineConfig({
@@ -8,7 +8,7 @@ export default defineConfig({
   trailingSlash: 'always',
   integrations: [
     sitemap({
-      filter: (page) => !page.includes('/search/'),
+      filter: (page) => !page.includes('/search/') && !isPendingPage(page),
       serialize: (item) => ({ ...item, lastmod: lastmodOf(item.url) }),
     }),
   ],

@@ -1,7 +1,7 @@
 ---
 // 検索エンジンが動画を見つけられるよう、最初から YouTube（プライバシー強化モード）を埋め込む
 import type { Video } from '../lib/data';
-interface Props { video: Video }
+interface Props { video: Pick<Video, 'id' | 'title' | 'format'> }
 const { video } = Astro.props;
 const vertical = video.format === 'short';
 ---
