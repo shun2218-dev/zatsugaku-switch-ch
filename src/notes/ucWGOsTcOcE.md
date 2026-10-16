@@ -43,3 +43,4 @@ sources:
 - [はちみつ・お米・塩・缶詰、なぜ腐らないのか？共通する1つの原理](/trivia/fSoAaD_giu0/)
 - [なぜ塩には賞味期限がないの？](/trivia/A4ZROdH4mRQ/)
 - [なぜ、缶詰は何年も腐らないの？](/trivia/fgd_n1ynxdE/)
+
