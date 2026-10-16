@@ -2,7 +2,7 @@
 // 使い方: pnpm sync              書き出しからマージまで
 //         pnpm sync --no-merge   PR を作るところまで（GitHub で中身を見てからマージする）
 //         pnpm sync --dry-run    書き出しとビルドの確認だけ（git は触らない）
-// 英語の下書き（src/translations/en）も作って同じ PR に入れる。新しい動画と、日本語が変わった下書きが対象（人が reviewedAt を入れるまで公開されない）
+// 英語版（src/translations/en）も Claude で作って同じ PR に入れる。新しい動画と、日本語が変わった記事が対象（マージで公開される）
 // マージすると main への push で GitHub Actions が公開する。YTAutomator の DB が起動している必要がある
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
@@ -37,12 +37,12 @@ try {
   fail('書き出しに失敗しました。YTAutomator の DB（docker）が起動しているか確かめてください');
 }
 const added = exported().filter((v) => !before.has(v.id));
-// 英語の下書き（--dry-run では作らない）。失敗しても記事の公開は止めない（あとで pnpm translate --auto で作れる）
+// 英語版（--dry-run では作らない）。失敗しても記事の公開は止めない（あとで pnpm translate --auto で作れる）
 if (!dryRun) {
   try {
     run('pnpm', 'translate', '--auto');
   } catch {
-    console.warn('[sync] 英語の下書きを作れませんでした。あとで pnpm translate --auto を実行してください');
+    console.warn('[sync] 英語版を作れませんでした。あとで pnpm translate --auto を実行してください');
   }
 }
 run('pnpm', 'build'); // 壊れていないかを確かめる

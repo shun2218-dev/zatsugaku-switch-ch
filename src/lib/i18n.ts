@@ -1,5 +1,6 @@
 // 英語版の記事（/en/trivia/<動画ID>/）。いまは記事ページだけを英語にしている。
-// 中身は scripts/translate.mjs が src/translations/en/<動画ID>.md に書き、人が reviewedAt を入れたものだけを公開する。
+// 中身は scripts/translate.mjs が Claude で翻訳して src/translations/en/<動画ID>.md に書き、すべて公開する（ページに AI 翻訳だと出す）。
+// 人が内容を確かめた記事は reviewedAt に日付が入っていて、ページに「確認済み」と出る。
 // 画面の決まった文言は UI にまとめる（あとでトップや一覧を英語にするときもここに足す）
 import { videos, type Video } from './data';
 
@@ -38,6 +39,7 @@ export type EnSource = { title: string; titleEn?: string; publisher: string; url
 type EnModule = {
   frontmatter: {
     reviewedAt?: string | Date;
+    translatedAt?: string | Date;
     title: string;
     answer: string;
     description: string;
@@ -52,14 +54,24 @@ const ymd = (d: string | Date | undefined) => (d instanceof Date ? d.toISOString
 
 const modules = import.meta.glob<EnModule>('../translations/en/*.md', { eager: true });
 
-export type EnArticle = EnModule['frontmatter'] & { id: string; video: Video; reviewedAt: string; html: () => Promise<string> };
+export type EnArticle = EnModule['frontmatter'] & {
+  id: string;
+  video: Video;
+  /** 人が確かめた日。確かめていなければ '' */
+  reviewedAt: string;
+  translatedAt: string;
+  /** 最後に手が入った日（確かめた日か翻訳した日） */
+  updatedAt: string;
+  html: () => Promise<string>;
+};
 
-/** 人が確認済み（reviewedAt あり）で、日本語の記事もある英語版 */
+/** 日本語の記事もある英語版 */
 export const enArticles: EnArticle[] = videos.flatMap((video) => {
   const mod = modules[`../translations/en/${video.id}.md`];
-  const reviewedAt = ymd(mod?.frontmatter.reviewedAt);
-  if (!mod || !reviewedAt) return [];
-  return [{ ...mod.frontmatter, id: video.id, video, reviewedAt, html: async () => await mod.compiledContent() }];
+  if (!mod) return [];
+  const reviewedAt = ymd(mod.frontmatter.reviewedAt);
+  const translatedAt = ymd(mod.frontmatter.translatedAt);
+  return [{ ...mod.frontmatter, id: video.id, video, reviewedAt, translatedAt, updatedAt: reviewedAt || translatedAt || video.publishedAt.slice(0, 10), html: async () => await mod.compiledContent() }];
 });
 
 const enById = new Map(enArticles.map((a) => [a.id, a]));

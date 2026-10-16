@@ -1,5 +1,5 @@
 ---
-# Claude で日本語から翻訳した下書き。内容を確かめたら reviewedAt に日付（"2026-10-17" の形）を入れると公開される
+# Claude で日本語から翻訳した英語版（AI 翻訳としてそのまま公開される）。人が確かめたら reviewedAt に日付（"2026-10-17" の形）を入れると「確認済み」と出る
 reviewedAt: ""
 translatedAt: "2026-10-17"
 sourceHash: 3c047cdbd3db

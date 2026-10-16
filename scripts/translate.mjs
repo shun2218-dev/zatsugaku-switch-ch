@@ -1,10 +1,9 @@
 // 日本語の記事（videos.json の台本 + src/notes の加筆）を Claude で英語にし、src/translations/en/<動画ID>.md に書く。
-// 書いたファイルは reviewedAt が空の「下書き」。人が読んで reviewedAt に日付を入れたものだけが /en/trivia/<動画ID>/ に公開される。
+// 書いた英語版はそのまま /en/trivia/<動画ID>/ に公開される（ページに AI 翻訳だと出す）。人が確かめたら reviewedAt に日付を入れると「確認済み」と出る。
 // 使い方: pnpm translate <動画ID> ...   指定した記事を翻訳する（あれば上書き）
 //         pnpm translate --missing      英語版がまだない記事をすべて翻訳する
-//         pnpm translate --stale        日本語の記事が翻訳後に変わったものを翻訳し直す（確認済みも下書きに戻る）
-//         pnpm translate --auto         英語版がまだない記事と、日本語が変わった下書きを翻訳する。確認済み（公開中）の英語版は
-//                                       書き換えず、日本語が変わったことを知らせるだけ（pnpm sync と GitHub Actions が使う）
+//         pnpm translate --stale        日本語の記事が翻訳後に変わったものを翻訳し直す
+//         pnpm translate --auto         英語版がまだない記事と、日本語が変わった記事を翻訳する（--missing と --stale。pnpm sync と GitHub Actions が使う）
 //         --dry-run をつけると、対象を表示するだけで翻訳しない。--jobs=N で同時に翻訳する本数（既定 4）
 // ANTHROPIC_API_KEY は環境変数か ../YTAutomator/.env から読む
 import crypto from 'node:crypto';
@@ -57,21 +56,14 @@ async function existing(id) {
 
 // ---- 対象を決める ----
 let targets = ids;
-const auto = flags.has('--auto');
-const staleReviewed = []; // --auto で書き換えなかった、公開中で日本語が変わった英語版
-if (auto || flags.has('--missing') || flags.has('--stale')) {
+const missing = flags.has('--auto') || flags.has('--missing');
+const staleToo = flags.has('--auto') || flags.has('--stale');
+if (missing || staleToo) {
   targets = [];
   for (const v of videos) {
     const done = await existing(v.id);
-    const stale = done && done.sourceHash !== hashOf(await sourceOf(v));
-    if (!done && (auto || flags.has('--missing'))) targets.push(v.id);
-    else if (stale && flags.has('--stale')) targets.push(v.id);
-    else if (stale && auto) (done.reviewedAt ? staleReviewed : targets).push(v.id);
+    if (!done ? missing : staleToo && done.sourceHash !== hashOf(await sourceOf(v))) targets.push(v.id);
   }
-}
-if (staleReviewed.length) {
-  console.warn(`[translate] 公開中の英語版のうち、日本語の記事が変わったもの（${staleReviewed.length} 本）。確かめて直すか、pnpm translate <動画ID> で翻訳し直す（下書きに戻る）:`);
-  for (const id of staleReviewed) console.warn(`  - ${id} ${byId.get(id).title}`);
 }
 const unknown = targets.filter((id) => !byId.has(id));
 if (unknown.length) throw new Error(`書き出し済みの記事にない動画ID: ${unknown.join(', ')}`);
@@ -163,7 +155,7 @@ async function write(id, src, en) {
       lang: JAPANESE.test(s.title) ? 'ja' : 'en',
     })),
   };
-  const head = '# Claude で日本語から翻訳した下書き。内容を確かめたら reviewedAt に日付（"2026-10-17" の形）を入れると公開される\n';
+  const head = '# Claude で日本語から翻訳した英語版（AI 翻訳としてそのまま公開される）。人が確かめたら reviewedAt に日付（"2026-10-17" の形）を入れると「確認済み」と出る\n';
   await fs.mkdir(OUT, { recursive: true });
   // 日付は引用符で囲む（Astro の YAML は囲まない日付を Date として読むため。src/notes の reviewedAt と同じ）
   const yaml = YAML.stringify(data, { lineWidth: 0 }).replace(/^(reviewedAt|translatedAt): (.*)$/gm, (_, k, v) => `${k}: "${v.replace(/^"|"$/g, '')}"`);
@@ -174,7 +166,7 @@ let failed = 0;
 async function translateOne(id) {
   const video = byId.get(id);
   try {
-    if ((await existing(id))?.reviewedAt) console.warn(`  ! ${id} は確認済みでしたが、下書きに戻します`);
+    if ((await existing(id))?.reviewedAt) console.warn(`  ! ${id} は確認済みでしたが、翻訳し直すので確認済みの印を外します`);
     const src = await sourceOf(video);
     // シーンや出典の数が日本語と合わないなど、検証で弾いたときは1回だけやり直す（API のエラーは SDK が再試行する）
     const en = await translate(src).catch((e) => {
@@ -194,5 +186,5 @@ const queue = [...targets];
 await Promise.all(Array.from({ length: Math.min(jobs, queue.length) }, async () => {
   while (queue.length) await translateOne(queue.shift());
 }));
-console.log(`[translate] ${targets.length - failed} 本を src/translations/en に書きました。読んで reviewedAt に日付を入れると公開されます`);
+console.log(`[translate] ${targets.length - failed} 本を src/translations/en に書きました`);
 if (failed) process.exit(1);

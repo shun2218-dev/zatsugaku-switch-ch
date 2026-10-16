@@ -1,7 +1,7 @@
 name: English drafts
 
-# 日本語の記事（src/notes の加筆・videos.json の台本）が変わった PR に、英語の下書きを足してコミットする。
-# 新しい記事と、日本語が変わった下書きだけを翻訳する（公開中の英語版は書き換えず、ログで知らせる）。
+# 日本語の記事（src/notes の加筆・videos.json の台本）が変わった PR に、英語版を足してコミットする。
+# 英語版がない記事と、日本語が変わった記事を翻訳する（マージで AI 翻訳として公開される）。
 # Secrets の ANTHROPIC_API_KEY がないときは何もしない
 on:
   pull_request:
@@ -34,21 +34,21 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: 英語の下書きを作る
+      - name: 英語版を作る
         if: env.ANTHROPIC_API_KEY != ''
         run: pnpm translate --auto
       - name: 壊れていないか確かめる
         if: env.ANTHROPIC_API_KEY != ''
         run: pnpm build
-      - name: 下書きをコミットする
+      - name: 英語版をコミットする
         if: env.ANTHROPIC_API_KEY != ''
         run: |
           git add src/translations
           if git diff --cached --quiet; then
-            echo "英語の下書きに変更はありません"
+            echo "英語版に変更はありません"
             exit 0
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit -m 'content: 英語の下書きを追加・更新（GitHub Actions）'
+          git commit -m 'content: 英語版を追加・更新（GitHub Actions）'
           git push

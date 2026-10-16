@@ -39,7 +39,7 @@ const jsonLd = [
     inLanguage: 'en',
     image: [new URL(thumb(video), Astro.site).href],
     datePublished: video.publishedAt,
-    dateModified: article.reviewedAt,
+    dateModified: article.updatedAt,
     author: { '@type': 'Organization', name: SITE.name, url: Astro.site?.href },
     publisher: { '@type': 'Organization', name: SITE.name },
     mainEntityOfPage: url.href,
@@ -71,14 +71,15 @@ const jsonLd = [
   <Breadcrumb lang="en" items={[{ name: 'Home', href: '/' }, { name: catName }, { name: article.title }]} />
 
   <article class="article">
-    <p class="translation-note">Translated from the <a href={jaUrl(video.id)} lang="ja" hreflang="ja">Japanese original</a>. The video is in Japanese.</p>
+    <p class="translation-note"><strong>AI translation.</strong> This article was translated from the <a href={jaUrl(video.id)} lang="ja" hreflang="ja">Japanese original</a> by AI{article.reviewedAt ? ' and checked by the site owner' : ', and may contain mistakes'}. The video is in Japanese.</p>
 
     <header class="article-head">
       <span class="card-cat"><CategoryIcon slug={video.category} />{catName}</span>
       <h1>{article.title}</h1>
       <ul class="article-meta">
         <li>Video published <time datetime={video.publishedAt}>{dateOf(video.publishedAt)}</time></li>
-        <li>Translation reviewed <time datetime={article.reviewedAt}>{dateOf(`${article.reviewedAt}T00:00:00+09:00`)}</time></li>
+        {article.translatedAt && <li>Translated by AI <time datetime={article.translatedAt}>{dateOf(`${article.translatedAt}T00:00:00+09:00`)}</time></li>}
+        {article.reviewedAt && <li>Checked <time datetime={article.reviewedAt}>{dateOf(`${article.reviewedAt}T00:00:00+09:00`)}</time></li>}
         <li>{readMinutes} min read</li>
       </ul>
     </header>
