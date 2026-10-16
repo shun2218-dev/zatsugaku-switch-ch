@@ -3,7 +3,9 @@
 // 使い方: pnpm translate <動画ID> ...   指定した記事を翻訳する（あれば上書き）
 //         pnpm translate --missing      英語版がまだない記事をすべて翻訳する
 //         pnpm translate --stale        日本語の記事が翻訳後に変わったものを翻訳し直す（確認済みも下書きに戻る）
-//         --dry-run をつけると、対象を表示するだけで翻訳しない
+//         pnpm translate --auto         英語版がまだない記事と、日本語が変わった下書きを翻訳する。確認済み（公開中）の英語版は
+//                                       書き換えず、日本語が変わったことを知らせるだけ（pnpm sync と GitHub Actions が使う）
+//         --dry-run をつけると、対象を表示するだけで翻訳しない。--jobs=N で同時に翻訳する本数（既定 4）
 // ANTHROPIC_API_KEY は環境変数か ../YTAutomator/.env から読む
 import crypto from 'node:crypto';
 import fs from 'node:fs/promises';
@@ -20,6 +22,7 @@ const argv = process.argv.slice(2);
 const flags = new Set(argv.filter((a) => a.startsWith('--')));
 const ids = argv.filter((a) => !a.startsWith('--'));
 const dryRun = flags.has('--dry-run');
+const jobs = Math.max(1, Number(argv.find((a) => a.startsWith('--jobs='))?.slice(7)) || 4);
 
 const videos = JSON.parse(await fs.readFile(path.join(ROOT, 'src/data/videos.json'), 'utf8'));
 const byId = new Map(videos.map((v) => [v.id, v]));
@@ -54,13 +57,21 @@ async function existing(id) {
 
 // ---- 対象を決める ----
 let targets = ids;
-if (flags.has('--missing') || flags.has('--stale')) {
+const auto = flags.has('--auto');
+const staleReviewed = []; // --auto で書き換えなかった、公開中で日本語が変わった英語版
+if (auto || flags.has('--missing') || flags.has('--stale')) {
   targets = [];
   for (const v of videos) {
     const done = await existing(v.id);
-    if (!done && flags.has('--missing')) targets.push(v.id);
-    else if (done && flags.has('--stale') && done.sourceHash !== hashOf(await sourceOf(v))) targets.push(v.id);
+    const stale = done && done.sourceHash !== hashOf(await sourceOf(v));
+    if (!done && (auto || flags.has('--missing'))) targets.push(v.id);
+    else if (stale && flags.has('--stale')) targets.push(v.id);
+    else if (stale && auto) (done.reviewedAt ? staleReviewed : targets).push(v.id);
   }
+}
+if (staleReviewed.length) {
+  console.warn(`[translate] 公開中の英語版のうち、日本語の記事が変わったもの（${staleReviewed.length} 本）。確かめて直すか、pnpm translate <動画ID> で翻訳し直す（下書きに戻る）:`);
+  for (const id of staleReviewed) console.warn(`  - ${id} ${byId.get(id).title}`);
 }
 const unknown = targets.filter((id) => !byId.has(id));
 if (unknown.length) throw new Error(`書き出し済みの記事にない動画ID: ${unknown.join(', ')}`);
@@ -160,17 +171,28 @@ async function write(id, src, en) {
 }
 
 let failed = 0;
-for (const id of targets) {
+async function translateOne(id) {
   const video = byId.get(id);
   try {
     if ((await existing(id))?.reviewedAt) console.warn(`  ! ${id} は確認済みでしたが、下書きに戻します`);
     const src = await sourceOf(video);
-    await write(id, src, await translate(src));
+    // シーンや出典の数が日本語と合わないなど、検証で弾いたときは1回だけやり直す（API のエラーは SDK が再試行する）
+    const en = await translate(src).catch((e) => {
+      if (e instanceof Anthropic.APIError) throw e;
+      console.warn(`  … ${id} やり直します（${e.message}）`);
+      return translate(src);
+    });
+    await write(id, src, en);
     console.log(`  ✓ ${id} ${video.title}`);
   } catch (e) {
     failed++;
     console.error(`  ✗ ${id} ${video.title}: ${e instanceof Anthropic.APIError ? `API ${e.status} ${e.message}` : e.message}`);
   }
 }
+// jobs 本ずつ同時に翻訳する（SDK が 429 などは自動で再試行する）
+const queue = [...targets];
+await Promise.all(Array.from({ length: Math.min(jobs, queue.length) }, async () => {
+  while (queue.length) await translateOne(queue.shift());
+}));
 console.log(`[translate] ${targets.length - failed} 本を src/translations/en に書きました。読んで reviewedAt に日付を入れると公開されます`);
 if (failed) process.exit(1);

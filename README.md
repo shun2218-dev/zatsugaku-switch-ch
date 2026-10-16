@@ -87,11 +87,15 @@ sources:
 
 記事ページだけ英語版がある（`/en/trivia/<動画ID>/`）。日本語の台本と加筆（notes）を Claude で翻訳し、`src/translations/en/<動画ID>.md` に置く。
 
-1. `pnpm translate <動画ID> ...` で翻訳する（`--missing` で英語版がまだない記事すべて、`--stale` で翻訳したあとに日本語が変わった記事。`--dry-run` で対象の確認だけ）。`pnpm sync` も新しい動画を翻訳する
+1. 英語の下書きは自動で作られる
+   - `pnpm sync`: 新しい動画と、日本語が変わった下書きを翻訳して同じ PR に入れる（`pnpm translate --auto`）
+   - `src/notes` や `videos.json` を変える PR: GitHub Actions（`.github/workflows/translate.yml`）が同じように翻訳し、PR にコミットする。Secrets に `ANTHROPIC_API_KEY` が必要（ないときは何もしない）
+   - 公開中（確認済み）の英語版は自動では書き換えない。日本語が変わったときはログに出るので、直すか `pnpm translate <動画ID>` で翻訳し直す（下書きに戻る）
+   - 手で動かすとき: `pnpm translate <動画ID> ...`・`--auto`・`--missing`（英語版がない記事すべて）・`--stale`（日本語が変わった記事。確認済みも下書きに戻る）。`--dry-run` で対象の確認だけ、`--jobs=N` で同時に翻訳する本数（既定 4）
 2. 書かれたファイルは **下書き**（`reviewedAt: ""`）。読んで直し、`reviewedAt: "2026-10-17"` のように日付を入れたものだけが公開される
 3. 公開した英語版は、日本語の記事のヘッダーの言語切り替えと「Read this article in English」からリンクされ、hreflang とサイトマップでつながる
 
-- API キーは `ANTHROPIC_API_KEY`（環境変数か `../YTAutomator/.env`）。モデルは Claude Opus 5.5、1本あたり10円ほど
+- API キーは `ANTHROPIC_API_KEY`（環境変数か `../YTAutomator/.env`。GitHub Actions では Secrets）。モデルは Claude Opus 5.5、詳しい解説がある記事は1本10円ほど、台本だけの記事は数円
 - 本文の中の別の記事へのリンクは、英語版があれば英語版へ、なければ日本語の記事へ「(in Japanese)」をつけてつなぐ
 - 決まった文言（ヘッダー・フッターなど）とカテゴリの英語名は `src/lib/i18n.ts`。トップや一覧も英語にするときは、ここに文言を足して `/en/` の下にページを作る
 
