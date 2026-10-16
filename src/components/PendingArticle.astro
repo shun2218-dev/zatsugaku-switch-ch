@@ -12,7 +12,7 @@ interface Props { video: YouTubeVideo }
 const { video } = Astro.props;
 const dateLabel = new Date(video.publishedAt).toLocaleDateString('ja-JP', { timeZone: 'Asia/Tokyo', year: 'numeric', month: 'long', day: 'numeric' });
 ---
-<Base title={video.title} description={`動画「${video.title}」の読みものは準備中です。`} image={video.thumbnail} type="article" noindex>
+<Base title={video.title} description={`動画「${video.title}」の記事は準備中です。`} image={video.thumbnail} type="article" noindex>
   <Breadcrumb items={[{ name: 'ホーム', href: '/' }, { name: video.title }]} />
 
   <article class="article">
@@ -24,7 +24,7 @@ const dateLabel = new Date(video.publishedAt).toLocaleDateString('ja-JP', { time
     <div class="article-top">
       <YouTubeEmbed video={{ id: video.id, title: video.title, format: video.short ? 'short' : 'longform' }} />
       <div class="answer">
-        <p class="answer-label">読みものは準備中です</p>
+        <p class="answer-label">記事は準備中です</p>
         <p class="answer-text">この雑学の解説ページは、近日中に公開します。まずは動画でどうぞ。</p>
         <a class="btn btn-ghost" href={video.url} target="_blank" rel="noopener" data-ga-event="watch_click" data-ga-video-id={video.id}>YouTubeで見る</a>
       </div>
