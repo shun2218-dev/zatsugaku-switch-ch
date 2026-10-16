@@ -84,7 +84,7 @@ const jsonLd = [
           <a class="btn btn-navy" href={watchUrl(video)} target="_blank" rel="noopener" data-ga-event="watch_click" data-ga-video-id={video.id}>YouTubeで見る<span class="visually-hidden">（新しいタブで開きます）</span></a>
           {note && <a class="btn btn-ghost" href="#details">詳しい解説へ ↓</a>}
         </div>
-        {en && <p class="answer-lang"><a href={enUrl(video.id)} lang="en" hreflang="en" data-ga-event="language_switch" data-ga-language="en">Read this article in English</a></p>}
+        {en && <p class="answer-lang"><a href={enUrl(video.id)} lang="en" hreflang="en" data-ga-event="language_switch" data-ga-language="en">Read this article in English</a> <span class="lang-note">(AI translation)</span></p>}
       </div>
     </div>
 

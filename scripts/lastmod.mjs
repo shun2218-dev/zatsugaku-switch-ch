@@ -1,6 +1,6 @@
 // サイトマップの最終更新日（lastmod）。astro.config.mjs から使う
 // 記事 = 動画の公開日と、詳細記事の確認日（reviewedAt）の新しいほう
-// 英語版の記事 = 翻訳を人が確認した日（reviewedAt）
+// 英語版の記事 = 人が確かめた日（reviewedAt）、なければ翻訳した日（translatedAt）
 // 一覧・カテゴリ = 含まれる記事のうち最も新しい日。それ以外の固定ページは付けない
 import { readFileSync, readdirSync } from 'node:fs';
 
@@ -8,7 +8,7 @@ const root = new URL('../', import.meta.url);
 const videos = JSON.parse(readFileSync(new URL('src/data/videos.json', root), 'utf8'));
 
 // <dir> の各記事（<動画ID>.md）の reviewedAt
-function reviewedDates(dir) {
+function reviewedDates(dir, keys = ['reviewedAt']) {
   const dates = new Map();
   let files = [];
   try {
@@ -16,13 +16,14 @@ function reviewedDates(dir) {
   } catch {}
   for (const file of files) {
     if (!file.endsWith('.md')) continue;
-    const m = readFileSync(new URL(`${dir}${file}`, root), 'utf8').match(/^reviewedAt:\s*["']?(\d{4}-\d{2}-\d{2})/m);
+    const text = readFileSync(new URL(`${dir}${file}`, root), 'utf8');
+    const m = keys.map((k) => text.match(new RegExp(`^${k}:\\s*["']?(\\d{4}-\\d{2}-\\d{2})`, 'm'))).find(Boolean);
     if (m) dates.set(file.slice(0, -3), `${m[1]}T00:00:00+09:00`);
   }
   return dates;
 }
 const reviewedAt = reviewedDates('src/notes/');
-const enReviewedAt = reviewedDates('src/translations/en/');
+const enReviewedAt = reviewedDates('src/translations/en/', ['reviewedAt', 'translatedAt']);
 
 const latest = (dates) => dates.reduce((a, b) => (new Date(b) > new Date(a) ? b : a));
 const articleDate = new Map(videos.map((v) => [v.id, latest([v.publishedAt, reviewedAt.get(v.id) ?? v.publishedAt])]));
