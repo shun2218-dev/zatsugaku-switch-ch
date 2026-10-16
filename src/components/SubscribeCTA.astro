@@ -1,11 +1,18 @@
 ---
 import { subscribeUrl } from '../lib/site';
+import type { Lang } from '../lib/i18n';
+interface Props { lang?: Lang }
+const { lang = 'ja' } = Astro.props;
+const text = {
+  ja: { title: '毎日、「なぜ？」を30秒で。', body: 'YouTubeで新しい雑学ショートを毎日公開しています。', button: 'YouTubeでチャンネル登録' },
+  en: { title: 'Everyday "why?" questions, in 30 seconds.', body: 'New trivia shorts on YouTube every day. The videos are in Japanese.', button: 'Subscribe on YouTube' },
+}[lang];
 ---
 <aside class="cta">
   <img src="/icon.webp" alt="" width="64" height="64" />
   <div>
-    <p class="cta-title">毎日、「なぜ？」を30秒で。</p>
-    <p class="cta-text">YouTubeで新しい雑学ショートを毎日公開しています。</p>
+    <p class="cta-title">{text.title}</p>
+    <p class="cta-text">{text.body}</p>
   </div>
-  <a class="btn btn-sub" href={subscribeUrl} target="_blank" rel="noopener" data-ga-event="subscribe_click" data-ga-placement="cta">YouTubeでチャンネル登録</a>
+  <a class="btn btn-sub" href={subscribeUrl} target="_blank" rel="noopener" data-ga-event="subscribe_click" data-ga-placement="cta">{text.button}</a>
 </aside>

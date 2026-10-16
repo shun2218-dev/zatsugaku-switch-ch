@@ -3,6 +3,7 @@ import '../styles/global.css';
 import { SITE, GA_ID, subscribeUrl } from '../lib/site';
 import { categories } from '../lib/data';
 import SearchForm from '../components/SearchForm.astro';
+import { UI, LANG_LABEL, type Lang } from '../lib/i18n';
 
 interface Props {
   title?: string;
@@ -13,15 +14,21 @@ interface Props {
   noindex?: boolean;
   /** アクセス解析でページをまとめる区分（記事ページの「詳細記事あり／なし」など） */
   contentGroup?: string;
+  /** ページの言語。英語は記事ページ（/en/trivia/）だけ */
+  lang?: Lang;
+  /** 同じ内容の別の言語のページ。あるときはヘッダーに言語の切り替えを出し、hreflang でつなぐ */
+  alternates?: Record<Lang, string>;
 }
-const { title, description = SITE.description, image = '/og-default.jpg', type = 'website', jsonLd = [], noindex = false, contentGroup } = Astro.props;
+const { title, description = SITE.description, image = '/og-default.jpg', type = 'website', jsonLd = [], noindex = false, contentGroup, lang = 'ja', alternates } = Astro.props;
+const t = UI[lang];
 // トップは「雑学スイッチ 公式サイト」で名前を探す人に合わせる。ほかのページは「<ページ名>｜雑学スイッチ」
-const fullTitle = title ? `${title}｜${SITE.name}` : `${SITE.name} 公式サイト｜${SITE.tagline}`;
+const fullTitle = lang === 'en' ? `${title} | ${t.siteName}` : title ? `${title}｜${SITE.name}` : `${SITE.name} 公式サイト｜${SITE.tagline}`;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const ogImage = new URL(image, Astro.site);
+const langs = Object.keys(LANG_LABEL) as Lang[];
 ---
 <!doctype html>
-<html lang="ja">
+<html lang={lang}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -29,16 +36,19 @@ const ogImage = new URL(image, Astro.site);
     <meta name="description" content={description} />
     {noindex && <meta name="robots" content="noindex" />}
     <link rel="canonical" href={canonical} />
+    {alternates && langs.map((l) => <link rel="alternate" hreflang={l} href={new URL(alternates[l], Astro.site)} />)}
+    {alternates && <link rel="alternate" hreflang="x-default" href={new URL(alternates.ja, Astro.site)} />}
     <link rel="icon" href="/favicon.png" type="image/png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="theme-color" content="#1b2a4a" />
-    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:site_name" content={t.siteName} />
     <meta property="og:title" content={title ?? SITE.name} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content={type} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={ogImage} />
-    <meta property="og:locale" content="ja_JP" />
+    <meta property="og:locale" content={lang === 'en' ? 'en_US' : 'ja_JP'} />
+    {alternates && <meta property="og:locale:alternate" content={lang === 'en' ? 'ja_JP' : 'en_US'} />}
     <meta name="twitter:card" content="summary_large_image" />
     {jsonLd.map((d) => <script type="application/ld+json" set:html={JSON.stringify(d)} />)}
     {GA_ID && <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}></script>}
@@ -64,37 +74,64 @@ const ogImage = new URL(image, Astro.site);
   <body>
     <header class="site-header">
       <div class="wrap header-inner">
-        <a href="/" class="logo">
+        <a href="/" class="logo" hreflang={lang === 'en' ? 'ja' : undefined}>
           <img src="/icon.webp" alt="" width="36" height="36" />
-          <span>{SITE.name}</span>
+          <span>{t.siteName}</span>
         </a>
-        <SearchForm id="header-q" class="header-search" />
-        <a class="header-search-icon" href="/search/" aria-label="雑学を検索">
-          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2.4" /><path d="m16.5 16.5 4.5 4.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" /></svg>
-        </a>
-        <a class="btn btn-sub header-sub" href={subscribeUrl} target="_blank" rel="noopener" data-ga-event="subscribe_click" data-ga-placement="header"><span class="header-sub-long">チャンネル</span>登録</a>
+        {/* 検索は日本語の記事だけが対象なので、英語のページには出さない */}
+        {lang === 'ja' && <SearchForm id="header-q" class="header-search" />}
+        {lang === 'ja' && (
+          <a class="header-search-icon" href="/search/" aria-label="雑学を検索">
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2.4" /><path d="m16.5 16.5 4.5 4.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" /></svg>
+          </a>
+        )}
+        {alternates && (
+          <nav class="lang-switch" aria-label={t.languageNav}>
+            {langs.map((l) => (l === lang
+              ? <span lang={l} aria-current="page">{LANG_LABEL[l]}</span>
+              : <a href={alternates[l]} lang={l} hreflang={l} data-ga-event="language_switch" data-ga-language={l}>{LANG_LABEL[l]}</a>))}
+          </nav>
+        )}
+        {lang === 'en'
+          ? <a class="btn btn-sub header-sub" href={subscribeUrl} target="_blank" rel="noopener" data-ga-event="subscribe_click" data-ga-placement="header">{t.subscribe}</a>
+          : <a class="btn btn-sub header-sub" href={subscribeUrl} target="_blank" rel="noopener" data-ga-event="subscribe_click" data-ga-placement="header"><span class="header-sub-long">チャンネル</span>登録</a>}
       </div>
     </header>
     <main class="wrap">
       <slot />
     </main>
     <footer class="site-footer">
-      <div class="wrap">
-        <p class="footer-brand">{SITE.name}<span>{SITE.tagline}</span></p>
-        <nav aria-label="カテゴリ" class="footer-cats">
-          {categories.map((c) => <a href={`/category/${c.slug}/`}>{c.name}</a>)}
-        </nav>
-        <nav>
-          <a href="/trivia/">雑学一覧</a>
-          <a href="/search/">雑学を検索</a>
-          <a href="/about/">このサイトについて</a>
-          <a href="/privacy/">プライバシーポリシー</a>
-          <a href="/terms/">利用規約</a>
-          <a href={SITE.contactUrl} target="_blank" rel="noopener">お問い合わせ</a>
-          <a href={SITE.channelUrl} target="_blank" rel="noopener" data-ga-event="channel_click" data-ga-placement="footer">YouTube</a>
-        </nav>
-        <p class="footer-note">動画と記事はAIを活用して制作し、公開前に運営者が確認しています。</p>
-      </div>
+      {lang === 'en' ? (
+        <div class="wrap">
+          <p class="footer-brand">{t.siteName}<span>Everyday "why?" questions, answered in 30 seconds.</span></p>
+          <nav aria-label="Site">
+            <a href="/" hreflang="ja">Home <span class="lang-note">(Japanese)</span></a>
+            <a href="/about/" hreflang="ja">About <span class="lang-note">(Japanese)</span></a>
+            <a href="/privacy/" hreflang="ja">Privacy policy <span class="lang-note">(Japanese)</span></a>
+            <a href="/terms/" hreflang="ja">Terms <span class="lang-note">(Japanese)</span></a>
+            <a href={SITE.contactUrl} target="_blank" rel="noopener">Contact</a>
+            <a href={SITE.channelUrl} target="_blank" rel="noopener" data-ga-event="channel_click" data-ga-placement="footer">YouTube</a>
+          </nav>
+          <p class="footer-note">Videos and articles are made with the help of AI and checked by the site owner before publishing. English pages are translated from Japanese with AI and reviewed by the site owner.</p>
+        </div>
+      ) : (
+        <div class="wrap">
+          <p class="footer-brand">{SITE.name}<span>{SITE.tagline}</span></p>
+          <nav aria-label="カテゴリ" class="footer-cats">
+            {categories.map((c) => <a href={`/category/${c.slug}/`}>{c.name}</a>)}
+          </nav>
+          <nav>
+            <a href="/trivia/">雑学一覧</a>
+            <a href="/search/">雑学を検索</a>
+            <a href="/about/">このサイトについて</a>
+            <a href="/privacy/">プライバシーポリシー</a>
+            <a href="/terms/">利用規約</a>
+            <a href={SITE.contactUrl} target="_blank" rel="noopener">お問い合わせ</a>
+            <a href={SITE.channelUrl} target="_blank" rel="noopener" data-ga-event="channel_click" data-ga-placement="footer">YouTube</a>
+          </nav>
+          <p class="footer-note">動画と記事はAIを活用して制作し、公開前に運営者が確認しています。</p>
+        </div>
+      )}
     </footer>
   </body>
 </html>

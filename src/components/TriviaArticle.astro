@@ -8,6 +8,7 @@ import CategoryIcon from './CategoryIcon.astro';
 import SubscribeCTA from './SubscribeCTA.astro';
 import { SITE, reportUrl } from '../lib/site';
 import { type Video, categoryOf, noteOf, related, plainText, thumb, watchUrl, displayTags, searchUrl } from '../lib/data';
+import { enArticleOf, enUrl, jaUrl } from '../lib/i18n';
 
 // 雑学の記事ページ（/trivia/<動画ID>/）。ルートは pages/trivia/[id].astro
 interface Props { video: Video }
@@ -19,6 +20,7 @@ const sources = note?.frontmatter.sources ?? [];
 const url = new URL(Astro.url.pathname, Astro.site);
 const description = (answer ?? plainText(video)).slice(0, 110);
 const published = new Date(video.publishedAt);
+const en = enArticleOf(video.id);
 const dateLabel = published.toLocaleDateString('ja-JP', { timeZone: 'Asia/Tokyo', year: 'numeric', month: 'long', day: 'numeric' });
 
 const jsonLd = [
@@ -55,7 +57,7 @@ const jsonLd = [
   },
 ];
 ---
-<Base title={video.title} description={description} image={thumb(video)} type="article" jsonLd={jsonLd} contentGroup={note ? '詳細記事あり' : '詳細記事なし'}>
+<Base title={video.title} description={description} image={thumb(video)} type="article" jsonLd={jsonLd} contentGroup={note ? '詳細記事あり' : '詳細記事なし'} alternates={en && { ja: jaUrl(video.id), en: enUrl(video.id) }}>
   <Breadcrumb items={[{ name: 'ホーム', href: '/' }, { name: cat.name, href: `/category/${cat.slug}/` }, { name: video.title }]} />
 
   <article class="article">
@@ -74,6 +76,7 @@ const jsonLd = [
         <p class="answer-label">ひとことで言うと</p>
         <p class="answer-text">{answer ?? video.hook}</p>
         <a class="btn btn-ghost" href={watchUrl(video)} target="_blank" rel="noopener" data-ga-event="watch_click" data-ga-video-id={video.id}>YouTubeで見る</a>
+        {en && <p class="answer-lang"><a href={enUrl(video.id)} lang="en" hreflang="en" data-ga-event="language_switch" data-ga-language="en">Read this article in English</a></p>}
       </div>
     </div>
 

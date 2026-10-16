@@ -1,0 +1,145 @@
+---
+import Base from '../layouts/Base.astro';
+import YouTubeEmbed from './YouTubeEmbed.astro';
+import Share from './Share.astro';
+import Breadcrumb from './Breadcrumb.astro';
+import CategoryIcon from './CategoryIcon.astro';
+import SubscribeCTA from './SubscribeCTA.astro';
+import { SITE, reportUrl } from '../lib/site';
+import { related, thumb, watchUrl } from '../lib/data';
+import { type EnArticle, CATEGORY_NAME_EN, enArticleOf, enUrl, jaUrl } from '../lib/i18n';
+
+// 雑学の記事の英語版（/en/trivia/<動画ID>/）。ルートは pages/en/trivia/[id].astro
+interface Props { article: EnArticle }
+const { article } = Astro.props;
+const { video } = article;
+const catName = CATEGORY_NAME_EN[video.category];
+const url = new URL(Astro.url.pathname, Astro.site);
+const description = article.answer.slice(0, 160);
+const dateOf = (d: string) => new Date(d).toLocaleDateString('en-US', { timeZone: 'Asia/Tokyo', year: 'numeric', month: 'long', day: 'numeric' });
+const images = video.scenes.map((s) => s.image);
+
+// 本文の中の別の記事へのリンクは、英語版があればそちらへ。なければ日本語の記事だと分かるようにする
+const body = (await article.html()).replace(/<a href="\/trivia\/([^/"]+)\/">([\s\S]*?)<\/a>/g, (_, id, text) =>
+  enArticleOf(id)
+    ? `<a href="${enUrl(id)}">${text}</a>`
+    : `<a href="${jaUrl(id)}" hreflang="ja">${text}</a> <span class="lang-note">(in Japanese)</span>`,
+);
+const relatedEn = related(video, 40).filter((v) => enArticleOf(v.id)).slice(0, 4).map((v) => ({ video: v, en: enArticleOf(v.id)! }));
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: article.title,
+    description,
+    inLanguage: 'en',
+    image: [new URL(thumb(video), Astro.site).href],
+    datePublished: video.publishedAt,
+    dateModified: article.reviewedAt,
+    author: { '@type': 'Organization', name: SITE.name, url: Astro.site?.href },
+    publisher: { '@type': 'Organization', name: SITE.name },
+    mainEntityOfPage: url.href,
+    translationOfWork: { '@type': 'Article', url: new URL(jaUrl(video.id), Astro.site).href, inLanguage: 'ja' },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'VideoObject',
+    name: article.title,
+    description: article.description || description,
+    inLanguage: 'ja',
+    thumbnailUrl: `https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`,
+    uploadDate: video.publishedAt,
+    contentUrl: watchUrl(video),
+    embedUrl: `https://www.youtube.com/embed/${video.id}`,
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: new URL('/', Astro.site).href },
+      { '@type': 'ListItem', position: 2, name: catName },
+      { '@type': 'ListItem', position: 3, name: article.title },
+    ],
+  },
+];
+---
+<Base lang="en" title={article.title} description={description} image={thumb(video)} type="article" jsonLd={jsonLd} contentGroup="English article" alternates={{ ja: jaUrl(video.id), en: enUrl(video.id) }}>
+  <Breadcrumb lang="en" items={[{ name: 'Home', href: '/' }, { name: catName }, { name: article.title }]} />
+
+  <article class="article">
+    <p class="translation-note">Translated from the <a href={jaUrl(video.id)} lang="ja" hreflang="ja">Japanese original</a>. The video is in Japanese.</p>
+
+    <header class="article-head">
+      <span class="card-cat"><CategoryIcon slug={video.category} />{catName}</span>
+      <h1>{article.title}</h1>
+      <p class="meta">Video published <time datetime={video.publishedAt}>{dateOf(video.publishedAt)}</time> · Translation reviewed <time datetime={article.reviewedAt}>{dateOf(`${article.reviewedAt}T00:00:00+09:00`)}</time></p>
+    </header>
+
+    <div class="article-top">
+      <YouTubeEmbed video={video} lang="en" />
+      <div class="answer">
+        <p class="answer-label">In short</p>
+        <p class="answer-text">{article.answer}</p>
+        <a class="btn btn-ghost" href={watchUrl(video)} target="_blank" rel="noopener" data-ga-event="watch_click" data-ga-video-id={video.id}>Watch on YouTube</a>
+      </div>
+    </div>
+
+    <details class="scenes-box">
+      <summary><h2>What the video says</h2></summary>
+      <ol class="scenes">
+        {article.scenes.map((s, i) => (
+          <li>
+            {images[i] && <img src={images[i]} alt={s.alt} loading="lazy" decoding="async" width="720" height={video.format === 'short' ? 1260 : 411} class:list={{ wide: video.format === 'longform' }} />}
+            <p>{s.text}</p>
+          </li>
+        ))}
+      </ol>
+    </details>
+
+    {body && (
+      <section class="prose">
+        <h2>A closer look</h2>
+        <Fragment set:html={body} />
+      </section>
+    )}
+
+    {article.sources && article.sources.length > 0 && (
+      <section class="sources">
+        <h2>Sources</h2>
+        <ul>
+          {article.sources.map((s) => (
+            <li>
+              <a href={s.url} target="_blank" rel="noopener" lang={s.lang} hreflang={s.lang}>{s.title}</a>
+              {s.lang === 'ja' && <span class="lang-badge">Japanese</span>}
+              {s.titleEn && <span class="source-sub">“{s.titleEn}”</span>}
+              <span class="source-sub">{s.publisher}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    <p class="report meta">Spotted a mistake in the article or the translation? Let us know through the <a href={reportUrl(`${article.title}（${url.href}）`)} target="_blank" rel="noopener">contact form</a> (in Japanese).</p>
+
+    <Share title={article.title} url={url} id={video.id} lang="en" />
+    <SubscribeCTA lang="en" />
+  </article>
+
+  {relatedEn.length > 0 && (
+    <section class="section">
+      <h2 class="section-title">More to read</h2>
+      <div class="grid">
+        {relatedEn.map(({ video: v, en }) => (
+          <a class="card" href={enUrl(v.id)}>
+            <div class="card-img"><img src={thumb(v)} alt="" loading="lazy" decoding="async" width="720" height="1260" /></div>
+            <div class="card-body">
+              <div class="card-meta"><span class="card-cat"><CategoryIcon slug={v.category} />{CATEGORY_NAME_EN[v.category]}</span></div>
+              <h3>{en.title}</h3>
+            </div>
+          </a>
+        ))}
+      </div>
+    </section>
+  )}
+</Base>

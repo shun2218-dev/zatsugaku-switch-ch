@@ -1,0 +1,12 @@
+---
+// 雑学の記事の英語版。人が確認した翻訳（src/translations/en/<動画ID>.md の reviewedAt あり）だけページを作る
+import TriviaArticleEn from '../../../components/TriviaArticleEn.astro';
+import { enArticles, type EnArticle } from '../../../lib/i18n';
+
+export function getStaticPaths() {
+  return enArticles.map((article) => ({ params: { id: article.id }, props: { article } }));
+}
+
+const { article } = Astro.props as { article: EnArticle };
+---
+<TriviaArticleEn article={article} />

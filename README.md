@@ -20,7 +20,8 @@ dist/ → GitHub Pages
 ```bash
 pnpm install
 pnpm export     # YTAutomator の DB・画像から書き出す（YTAutomator の DB が起動している必要あり）
-pnpm sync       # 新しい動画を載せる: 書き出し → ビルド確認 → PR → main へマージ（下記）
+pnpm sync       # 新しい動画を載せる: 書き出し → 英語の下書き → ビルド確認 → PR → main へマージ（下記）
+pnpm translate  # 記事を英語にする（下記「英語版の記事」）
 pnpm dev        # http://localhost:4321
 pnpm build
 ```
@@ -69,6 +70,18 @@ sources:
 ---
 本文（Markdown）＝「もう少し詳しく」
 ```
+
+## 英語版の記事
+
+記事ページだけ英語版がある（`/en/trivia/<動画ID>/`）。日本語の台本と加筆（notes）を Claude で翻訳し、`src/translations/en/<動画ID>.md` に置く。
+
+1. `pnpm translate <動画ID> ...` で翻訳する（`--missing` で英語版がまだない記事すべて、`--stale` で翻訳したあとに日本語が変わった記事。`--dry-run` で対象の確認だけ）。`pnpm sync` も新しい動画を翻訳する
+2. 書かれたファイルは **下書き**（`reviewedAt: ""`）。読んで直し、`reviewedAt: "2026-10-17"` のように日付を入れたものだけが公開される
+3. 公開した英語版は、日本語の記事のヘッダーの言語切り替えと「Read this article in English」からリンクされ、hreflang とサイトマップでつながる
+
+- API キーは `ANTHROPIC_API_KEY`（環境変数か `../YTAutomator/.env`）。モデルは Claude Opus 5.5、1本あたり10円ほど
+- 本文の中の別の記事へのリンクは、英語版があれば英語版へ、なければ日本語の記事へ「(in Japanese)」をつけてつなぐ
+- 決まった文言（ヘッダー・フッターなど）とカテゴリの英語名は `src/lib/i18n.ts`。トップや一覧も英語にするときは、ここに文言を足して `/en/` の下にページを作る
 
 ## カテゴリ
 

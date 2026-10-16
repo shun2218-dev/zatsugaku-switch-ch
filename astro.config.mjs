@@ -8,6 +8,8 @@ export default defineConfig({
   trailingSlash: 'always',
   integrations: [
     sitemap({
+      // 英語版の記事（/en/trivia/<動画ID>/）と日本語の記事（/trivia/<動画ID>/）を hreflang でつなぐ
+      i18n: { defaultLocale: 'ja', locales: { ja: 'ja', en: 'en' } },
       filter: (page) => !page.includes('/search/') && !isPendingPage(page),
       serialize: (item) => ({ ...item, lastmod: lastmodOf(item.url) }),
     }),

@@ -192,7 +192,7 @@ main { padding-block: 24px 48px; }
 .header-search input, .hero .search-form input { border-color: transparent; }
 .header-search button, .hero .search-form button { background: rgb(255 255 255 / .14); color: #fff; }
 .header-search button:hover, .hero .search-form button:hover { background: var(--amber); color: var(--navy); }
-.header-search { flex: 1; max-width: 420px; margin-left: auto; }
+.header-search { flex: 1; min-width: 0; max-width: 420px; margin-left: auto; }
 .header-search input { height: var(--header-ctl); padding: 0 18px; font-size: .9rem; }
 .header-search button { width: var(--header-ctl); height: var(--header-ctl); }
 .header-search-icon { display: none; place-items: center; width: var(--header-ctl); height: var(--header-ctl); color: #fff; margin-left: auto; }
@@ -245,3 +245,30 @@ main { padding-block: 24px 48px; }
 
 /* 記事がまだない新着動画（YouTube へのリンク） */
 .yt-badge { display: inline-flex; align-items: center; gap: .3em; font-size: .75rem; font-weight: 700; color: #fff; background: var(--navy); padding: .1em .6em; border-radius: 999px; }
+
+/* ---- 言語（英語版の記事） ---- */
+.logo { margin-right: auto; }
+.lang-switch { display: flex; flex: none; height: var(--header-ctl); padding: 3px; border-radius: 999px; background: rgb(255 255 255 / .1); font-size: .8rem; font-weight: 700; line-height: 1; }
+.lang-switch > * { display: grid; place-items: center; padding: 0 .9em; border-radius: 999px; color: #fff; text-decoration: none; white-space: nowrap; }
+.lang-switch [aria-current] { background: #fff; color: var(--navy); }
+.lang-switch a:hover { color: var(--amber); }
+.lang-switch a:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
+/* 小さい画面では、いまの言語を省いてもう一方へのリンクだけにする */
+@media (max-width: 639px) {
+  .lang-switch { padding: 0; background: none; }
+  .lang-switch [aria-current] { display: none; }
+  .lang-switch > a { padding: 0 .5em; }
+  /* 言語の切り替えがあるときは、登録ボタンを「登録」だけにして1行に収める */
+  .lang-switch + .header-sub .header-sub-long { display: none; }
+}
+/* さらに狭い画面では、ヘッダーの切り替えを省く（記事の中にもう一方の言語へのリンクがある）。英語のロゴは長いので小さくする */
+@media (max-width: 399px) {
+  .lang-switch { display: none; }
+  html[lang='en'] .logo { font-size: .95rem; }
+}
+.translation-note { margin: 0 0 16px; padding: 10px 16px; border-radius: var(--radius); background: #e8ecf4; color: var(--navy); font-size: .9rem; }
+.answer-lang { margin: 12px 0 0; font-size: .9rem; }
+.lang-note { font-size: .85em; color: var(--muted); }
+.site-footer .lang-note { color: #aeb8cf; }
+.lang-badge { display: inline-block; margin-left: .5em; padding: 0 .5em; border-radius: 4px; background: var(--line); color: var(--ink); font-size: .75rem; font-weight: 700; vertical-align: .1em; }
+.source-sub { display: block; color: var(--muted); }
