@@ -1,6 +1,6 @@
 ---
 # Claude で日本語から翻訳した下書き。内容を確かめたら reviewedAt に日付（"2026-10-17" の形）を入れると公開される
-reviewedAt: ""
+reviewedAt: "2026-10-17"
 translatedAt: "2026-10-17"
 sourceHash: 27a7267cef73
 title: Why does the order of a penalty shootout work against the goalkeeper?
