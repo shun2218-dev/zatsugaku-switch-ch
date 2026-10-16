@@ -7,7 +7,7 @@ import Breadcrumb from './Breadcrumb.astro';
 import CategoryIcon from './CategoryIcon.astro';
 import SubscribeCTA from './SubscribeCTA.astro';
 import { SITE, reportUrl } from '../lib/site';
-import { type Video, categoryOf, noteOf, related, plainText, thumb, watchUrl, displayTags, searchUrl } from '../lib/data';
+import { type Video, categoryOf, noteOf, related, plainText, thumb, watchUrl, displayTags, searchUrl, readingMinutes, jaDate } from '../lib/data';
 import { enArticleOf, enUrl, jaUrl } from '../lib/i18n';
 
 // 雑学の記事ページ（/trivia/<動画ID>/）。ルートは pages/trivia/[id].astro
@@ -19,9 +19,10 @@ const answer = note?.frontmatter.answer;
 const sources = note?.frontmatter.sources ?? [];
 const url = new URL(Astro.url.pathname, Astro.site);
 const description = (answer ?? plainText(video)).slice(0, 110);
-const published = new Date(video.publishedAt);
 const en = enArticleOf(video.id);
-const dateLabel = published.toLocaleDateString('ja-JP', { timeZone: 'Asia/Tokyo', year: 'numeric', month: 'long', day: 'numeric' });
+const reviewedAt = note?.frontmatter.reviewedAt;
+// 目次: 「もう少し詳しく」の小見出し
+const headings = note?.getHeadings().filter((h) => h.depth === 3) ?? [];
 
 const jsonLd = [
   {
@@ -62,64 +63,101 @@ const jsonLd = [
 
   <article class="article">
     <header class="article-head">
-      <span class="card-cat"><CategoryIcon slug={cat.slug} />{cat.name}</span>
+      <a class="card-cat" href={`/category/${cat.slug}/`}><CategoryIcon slug={cat.slug} />{cat.name}</a>
       <h1>{video.title}</h1>
-      <p class="meta">動画公開: <time datetime={video.publishedAt}>{dateLabel}</time></p>
-      <div class="tags article-tags">
-        {displayTags(video).map((t) => <a class="tag" href={searchUrl(t)}>#{t}</a>)}
-      </div>
+      <ul class="article-meta">
+        <li>動画公開 <time datetime={video.publishedAt}>{jaDate(video.publishedAt)}</time></li>
+        {reviewedAt && <li>出典の確認 <time datetime={reviewedAt}>{jaDate(reviewedAt)}</time></li>}
+        <li>読む時間の目安 約{readingMinutes(video)}分</li>
+      </ul>
+      <ul class="tags article-tags" aria-label="タグ">
+        {displayTags(video).map((t) => <li><a class="tag" href={searchUrl(t)}>#{t}</a></li>)}
+      </ul>
     </header>
 
     <div class="article-top">
       <YouTubeEmbed video={video} />
       <div class="answer">
-        <p class="answer-label">ひとことで言うと</p>
+        <p class="answer-label"><span class="switch-mark" aria-hidden="true"></span>ひとことで言うと</p>
         <p class="answer-text">{answer ?? video.hook}</p>
-        <a class="btn btn-ghost" href={watchUrl(video)} target="_blank" rel="noopener" data-ga-event="watch_click" data-ga-video-id={video.id}>YouTubeで見る</a>
+        <div class="answer-actions">
+          <a class="btn btn-navy" href={watchUrl(video)} target="_blank" rel="noopener" data-ga-event="watch_click" data-ga-video-id={video.id}>YouTubeで見る<span class="visually-hidden">（新しいタブで開きます）</span></a>
+          {note && <a class="btn btn-ghost" href="#details">詳しい解説へ ↓</a>}
+        </div>
         {en && <p class="answer-lang"><a href={enUrl(video.id)} lang="en" hreflang="en" data-ga-event="language_switch" data-ga-language="en">Read this article in English</a></p>}
       </div>
     </div>
 
-    <details class="scenes-box">
-      <summary><h2>動画の内容</h2></summary>
-      <ol class="scenes">
-        {video.scenes.map((s) => (
-          <li>
-            {s.image && <img src={s.image} alt={s.alt} loading="lazy" decoding="async" width="720" height={video.format === 'short' ? 1260 : 411} class:list={{ wide: video.format === 'longform' }} />}
-            <p>{s.text}</p>
-          </li>
-        ))}
-      </ol>
-    </details>
+    <div class="article-body">
+      {note && (
+        <details class="toc" open data-toc>
+          <summary>この記事の目次</summary>
+          <ol>
+            <li>
+              <a href="#details">もう少し詳しく</a>
+              {headings.length > 0 && <ol>{headings.map((h) => <li><a href={`#${h.slug}`}>{h.text}</a></li>)}</ol>}
+            </li>
+            <li><a href="#scenes">動画の内容</a></li>
+            {sources.length > 0 && <li><a href="#sources">出典・参考資料</a></li>}
+          </ol>
+        </details>
+      )}
+      {/* 目次は広い画面では右に開いて置き、狭い画面では本文の前にたたんで置く */}
+      <script is:inline>if (matchMedia('(max-width: 959px)').matches) document.querySelector('[data-toc]')?.removeAttribute('open');</script>
 
-    <section class="prose">
-      <h2>もう少し詳しく</h2>
-      {note ? <note.Content /> : <p class="meta">この雑学の詳しい解説と出典は、順次追加していきます。</p>}
-    </section>
+      <div class="article-main">
+        {note && (
+          <section id="details" class="prose" aria-labelledby="details-title">
+            <h2 id="details-title">もう少し詳しく</h2>
+            <note.Content />
+          </section>
+        )}
 
-    {sources.length > 0 && (
-      <section class="sources">
-        <h2>出典・参考資料</h2>
-        <ul>
-          {sources.map((s) => (
-            <li><a href={s.url} target="_blank" rel="noopener">{s.title}</a>（{s.publisher}）</li>
-          ))}
-        </ul>
-        {note?.frontmatter.reviewedAt && <p class="meta">最終確認日: {note.frontmatter.reviewedAt}</p>}
-      </section>
-    )}
+        <details class="scenes-box" open>
+          <summary><h2 id="scenes">動画の内容</h2></summary>
+          <ol class="scenes">
+            {video.scenes.map((s) => (
+              <li>
+                {s.image && <img src={s.image} alt={s.alt} loading="lazy" decoding="async" width="720" height={video.format === 'short' ? 1260 : 411} class:list={{ wide: video.format === 'longform' }} />}
+                <p>{s.text}</p>
+              </li>
+            ))}
+          </ol>
+        </details>
 
-    <p class="report meta">内容に誤りを見つけたら、<a href={reportUrl(`${video.title}（${url.href}）`)} target="_blank" rel="noopener">お問い合わせフォーム</a>からお知らせください。</p>
+        {!note && <p class="meta">この雑学の詳しい解説と出典は、順次追加していきます。</p>}
 
-    <Share title={video.title} url={url} id={video.id} />
-    <SubscribeCTA />
+        {sources.length > 0 && (
+          <section class="sources" aria-labelledby="sources">
+            <h2 id="sources">出典・参考資料</h2>
+            <ol>
+              {sources.map((s) => (
+                <li><a href={s.url} target="_blank" rel="noopener">{s.title}</a><span class="source-sub">{s.publisher}</span></li>
+              ))}
+            </ol>
+            {reviewedAt && <p class="meta">最終確認日: <time datetime={reviewedAt}>{jaDate(reviewedAt)}</time></p>}
+          </section>
+        )}
+
+        <div class="report">
+          <p>内容に誤りを見つけたら、お知らせください。</p>
+          <a class="btn btn-ghost" href={reportUrl(`${video.title}（${url.href}）`)} target="_blank" rel="noopener">誤りを報告する<span class="visually-hidden">（お問い合わせフォームが新しいタブで開きます）</span></a>
+        </div>
+
+        <Share title={video.title} url={url} id={video.id} />
+      </div>
+    </div>
   </article>
 
-  <section class="section">
-    <h2 class="section-title">あわせて見たい雑学</h2>
+  <section class="section" aria-labelledby="related-title">
+    <div class="section-head">
+      <h2 id="related-title" class="section-title">あわせて読みたい雑学</h2>
+      <p class="more"><a href={`/category/${cat.slug}/`}>{cat.name}の雑学をすべて見る →</a></p>
+    </div>
     <div class="grid">
       {related(video).map((v) => <VideoCard video={v} />)}
     </div>
-    <p class="more"><a href={`/category/${cat.slug}/`}>{cat.name}の雑学をすべて見る →</a></p>
   </section>
+
+  <SubscribeCTA />
 </Base>

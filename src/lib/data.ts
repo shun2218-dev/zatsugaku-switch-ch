@@ -21,6 +21,7 @@ export type Note = {
   frontmatter: { answer?: string; sources?: Source[]; reviewedAt?: string };
   Content: any;
   rawContent: () => string;
+  getHeadings: () => { depth: number; slug: string; text: string }[];
 };
 
 // 再生数は書き出し時点の値。ビルド時に YouTube から公開値を取れたらそちらを使う（人気順を最新にする）
@@ -103,6 +104,11 @@ export const topTags = (n = 16) =>
 export const searchUrl = (q: string) => `/search/?q=${encodeURIComponent(q)}`;
 
 export const plainText = (v: Video) => v.scenes.map((s) => s.text).join('');
+/** 読む時間の目安（分）。1分に500字として、動画の台本と加筆を合わせて数える */
+export const readingMinutes = (v: Video) => Math.max(1, Math.round((plainText(v).length + (noteOf(v.id)?.rawContent().length ?? 0)) / 500));
+/** "2026-10-09" → 2026年10月9日 */
+export const jaDate = (d: string) =>
+  new Date(d.length === 10 ? `${d}T00:00:00+09:00` : d).toLocaleDateString('ja-JP', { timeZone: 'Asia/Tokyo', year: 'numeric', month: 'long', day: 'numeric' });
 export const thumb = (v: Video) => v.scenes.find((s) => s.image)?.image ?? '/og-default.jpg';
 export const watchUrl = (v: Video) =>
   v.format === 'short' ? `https://www.youtube.com/shorts/${v.id}` : `https://www.youtube.com/watch?v=${v.id}`;
