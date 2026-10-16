@@ -6,13 +6,19 @@ import SearchForm from '../components/SearchForm.astro';
 import CategoryIcon from '../components/CategoryIcon.astro';
 import ChannelStats from '../components/ChannelStats.astro';
 import PendingCard from '../components/PendingCard.astro';
-import { SITE, subscribeUrl } from '../lib/site';
-import { videos, categories, popular, latest, pending } from '../lib/data';
+import { SITE } from '../lib/site';
+import { videos, categories, popular, latest, pending, noteOf, thumb, topTags, searchUrl } from '../lib/data';
 
 // 新着: 記事がまだない動画（YouTube へのリンク）を先に、続けて記事を新しい順に。合わせて8本
 const NEW_COUNT = 8;
 const newPending = pending.slice(0, NEW_COUNT);
 const newLatest = latest.slice(0, NEW_COUNT - newPending.length);
+
+// 今日のなぜ？: 「ひとことで言うと」がある記事から、日本時間の日付で1本選ぶ（3時間ごとのビルドで日が変わると入れ替わる）
+const quizPool = videos.filter((v) => noteOf(v.id)?.frontmatter.answer);
+const day = Math.floor((Date.now() + 9 * 3600_000) / 86400_000);
+const quiz = quizPool[day % quizPool.length];
+const quizAnswer = quiz && noteOf(quiz.id)!.frontmatter.answer!;
 
 const jsonLd = [
   { '@context': 'https://schema.org', '@type': 'WebSite', name: SITE.name, alternateName: SITE.alternateName, url: Astro.site?.href, inLanguage: 'ja' },
@@ -20,44 +26,84 @@ const jsonLd = [
 ];
 ---
 <Base jsonLd={jsonLd}>
-  <section class="hero">
-    <p class="hero-kicker">YouTube 雑学チャンネル</p>
-    <h1>{SITE.tagline}</h1>
-    <p class="hero-lead">「なぜハチミツは腐らないの？」「なぜ雷は音が遅れて聞こえるの？」――<br />毎日の「なぜ？」を短い動画と読みもので解き明かします。</p>
-    <SearchForm id="hero-q" />
-    <div class="hero-actions">
-      <a class="btn btn-sub" href={subscribeUrl} target="_blank" rel="noopener" data-ga-event="subscribe_click" data-ga-placement="hero">YouTubeでチャンネル登録</a>
-      <a class="btn btn-ghost-light" href="/trivia/">雑学を読む（{videos.length}本）</a>
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="hero-inner">
+      <div class="hero-main">
+        <p class="hero-kicker"><span class="switch-mark" aria-hidden="true"></span>YouTube 雑学チャンネル</p>
+        <h1 id="hero-title">30秒で、<br />好奇心に<em>スイッチ。</em></h1>
+        <p class="hero-lead">「なぜハチミツは腐らないの？」「なぜ雷は音が遅れて聞こえるの？」――毎日の「なぜ？」を、短い動画と読みもので解き明かします。</p>
+        <SearchForm id="hero-q" showLabel />
+        <ul class="hero-tags" aria-label="よく出てくるテーマ">
+          <li class="hero-tags-label" aria-hidden="true">よく出てくるテーマ：</li>
+          {topTags(4).map((t) => <li><a href={searchUrl(t)}>#{t}</a></li>)}
+        </ul>
+      </div>
+
+      {quiz && (
+        <article class="quiz" aria-labelledby="quiz-title">
+          <img class="quiz-img" src={thumb(quiz)} alt="" width="720" height="1260" />
+          <div class="quiz-body">
+            <p class="quiz-label">今日のなぜ？</p>
+            <h2 id="quiz-title"><a href={`/trivia/${quiz.id}/`}>{quiz.title}</a></h2>
+            {/* スクリプトが動くときだけスイッチを出し、答えを隠す（動かないときは答えがそのまま読める） */}
+            <button type="button" class="quiz-switch" aria-expanded="false" aria-controls="quiz-answer" hidden data-quiz-switch data-ga-event="quiz_switch">
+              <span class="quiz-track" aria-hidden="true"></span>答えを見る
+            </button>
+            <div id="quiz-answer" class="quiz-answer" data-quiz-answer>
+              <p>{quizAnswer}</p>
+              <a href={`/trivia/${quiz.id}/`}>読みもので詳しく →</a>
+            </div>
+          </div>
+        </article>
+      )}
     </div>
-    <ChannelStats tone="dark" />
   </section>
 
-  <section class="section">
-    <h2 class="section-title">よく見られている雑学</h2>
+  <ChannelStats tone="card" />
+
+  <section class="section" aria-labelledby="popular-title">
+    <h2 id="popular-title" class="section-title">よく見られている雑学</h2>
     <div class="grid">{popular.slice(0, 8).map((v) => <VideoCard video={v} />)}</div>
   </section>
 
-  <section class="section">
-    <h2 class="section-title">カテゴリから探す</h2>
-    <div class="cat-grid">
+  <section class="section" aria-labelledby="cat-title">
+    <h2 id="cat-title" class="section-title">カテゴリから探す</h2>
+    <ul class="cat-grid">
       {categories.map((c) => (
-        <a class="cat-tile" href={`/category/${c.slug}/`}>
-          <span class="cat-badge"><CategoryIcon slug={c.slug} /></span>
-          <span class="cat-name">{c.name}</span>
-          <span class="cat-count">{c.videos.length}本</span>
-        </a>
+        <li>
+          <a class="cat-tile" href={`/category/${c.slug}/`}>
+            <span class="cat-badge"><CategoryIcon slug={c.slug} /></span>
+            <span class="cat-text"><span class="cat-name">{c.name}</span><span class="cat-count">{c.videos.length}本</span></span>
+          </a>
+        </li>
       ))}
-    </div>
+    </ul>
   </section>
 
-  <section class="section">
-    <h2 class="section-title">新着の雑学</h2>
+  <section class="section" aria-labelledby="new-title">
+    <div class="section-head">
+      <h2 id="new-title" class="section-title">新着の雑学</h2>
+      <p class="more"><a href="/trivia/">すべての雑学を見る（{videos.length}本） →</a></p>
+    </div>
     <div class="grid">
       {newPending.map((v) => <PendingCard video={v} />)}
       {newLatest.map((v) => <VideoCard video={v} />)}
     </div>
-    <p class="more"><a href="/trivia/">すべての雑学を見る →</a></p>
   </section>
 
   <SubscribeCTA />
 </Base>
+
+<script>
+  const button = document.querySelector<HTMLButtonElement>('[data-quiz-switch]');
+  const answer = document.querySelector<HTMLElement>('[data-quiz-answer]');
+  if (button && answer) {
+    button.hidden = false;
+    answer.hidden = true;
+    button.addEventListener('click', () => {
+      const open = button.getAttribute('aria-expanded') !== 'true';
+      button.setAttribute('aria-expanded', String(open));
+      answer.hidden = !open;
+    });
+  }
+</script>

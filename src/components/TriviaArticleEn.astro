@@ -18,6 +18,7 @@ const url = new URL(Astro.url.pathname, Astro.site);
 const description = article.answer.slice(0, 160);
 const dateOf = (d: string) => new Date(d).toLocaleDateString('en-US', { timeZone: 'Asia/Tokyo', year: 'numeric', month: 'long', day: 'numeric' });
 const images = video.scenes.map((s) => s.image);
+const readMinutes = Math.max(1, Math.round((article.scenes.map((x) => x.text).join(' ').split(/\s+/).length + (await article.html()).replace(/<[^>]+>/g, ' ').split(/\s+/).length) / 230));
 
 // 本文の中の別の記事へのリンクは、英語版があればそちらへ。なければ日本語の記事だと分かるようにする
 const body = (await article.html()).replace(/<a href="\/trivia\/([^/"]+)\/">([\s\S]*?)<\/a>/g, (_, id, text) =>
@@ -25,6 +26,8 @@ const body = (await article.html()).replace(/<a href="\/trivia\/([^/"]+)\/">([\s
     ? `<a href="${enUrl(id)}">${text}</a>`
     : `<a href="${jaUrl(id)}" hreflang="ja">${text}</a> <span class="lang-note">(in Japanese)</span>`,
 );
+// 目次: 「A closer look」の小見出し（本文の h3）
+const headings = [...body.matchAll(/<h3 id="([^"]+)">([\s\S]*?)<\/h3>/g)].map(([, slug, html]) => ({ slug, text: html.replace(/<[^>]+>/g, '') }));
 const relatedEn = related(video, 40).filter((v) => enArticleOf(v.id)).slice(0, 4).map((v) => ({ video: v, en: enArticleOf(v.id)! }));
 
 const jsonLd = [
@@ -73,62 +76,90 @@ const jsonLd = [
     <header class="article-head">
       <span class="card-cat"><CategoryIcon slug={video.category} />{catName}</span>
       <h1>{article.title}</h1>
-      <p class="meta">Video published <time datetime={video.publishedAt}>{dateOf(video.publishedAt)}</time> · Translation reviewed <time datetime={article.reviewedAt}>{dateOf(`${article.reviewedAt}T00:00:00+09:00`)}</time></p>
+      <ul class="article-meta">
+        <li>Video published <time datetime={video.publishedAt}>{dateOf(video.publishedAt)}</time></li>
+        <li>Translation reviewed <time datetime={article.reviewedAt}>{dateOf(`${article.reviewedAt}T00:00:00+09:00`)}</time></li>
+        <li>{readMinutes} min read</li>
+      </ul>
     </header>
 
     <div class="article-top">
       <YouTubeEmbed video={video} lang="en" />
       <div class="answer">
-        <p class="answer-label">In short</p>
+        <p class="answer-label"><span class="switch-mark" aria-hidden="true"></span>In short</p>
         <p class="answer-text">{article.answer}</p>
-        <a class="btn btn-ghost" href={watchUrl(video)} target="_blank" rel="noopener" data-ga-event="watch_click" data-ga-video-id={video.id}>Watch on YouTube</a>
+        <div class="answer-actions">
+          <a class="btn btn-navy" href={watchUrl(video)} target="_blank" rel="noopener" data-ga-event="watch_click" data-ga-video-id={video.id}>Watch on YouTube<span class="visually-hidden"> (opens in a new tab)</span></a>
+          {body && <a class="btn btn-ghost" href="#details">Read the details ↓</a>}
+        </div>
       </div>
     </div>
 
-    <details class="scenes-box">
-      <summary><h2>What the video says</h2></summary>
-      <ol class="scenes">
-        {article.scenes.map((s, i) => (
-          <li>
-            {images[i] && <img src={images[i]} alt={s.alt} loading="lazy" decoding="async" width="720" height={video.format === 'short' ? 1260 : 411} class:list={{ wide: video.format === 'longform' }} />}
-            <p>{s.text}</p>
-          </li>
-        ))}
-      </ol>
-    </details>
-
-    {body && (
-      <section class="prose">
-        <h2>A closer look</h2>
-        <Fragment set:html={body} />
-      </section>
-    )}
-
-    {article.sources && article.sources.length > 0 && (
-      <section class="sources">
-        <h2>Sources</h2>
-        <ul>
-          {article.sources.map((s) => (
+    <div class="article-body">
+      {body && (
+        <details class="toc" open data-toc>
+          <summary>On this page</summary>
+          <ol>
             <li>
-              <a href={s.url} target="_blank" rel="noopener" lang={s.lang} hreflang={s.lang}>{s.title}</a>
-              {s.lang === 'ja' && <span class="lang-badge">Japanese</span>}
-              {s.titleEn && <span class="source-sub">“{s.titleEn}”</span>}
-              <span class="source-sub">{s.publisher}</span>
+              <a href="#details">A closer look</a>
+              {headings.length > 0 && <ol>{headings.map((h) => <li><a href={`#${h.slug}`}>{h.text}</a></li>)}</ol>}
             </li>
-          ))}
-        </ul>
-      </section>
-    )}
+            <li><a href="#scenes">What the video says</a></li>
+            {article.sources && article.sources.length > 0 && <li><a href="#sources">Sources</a></li>}
+          </ol>
+        </details>
+      )}
+      <script is:inline>if (matchMedia('(max-width: 959px)').matches) document.querySelector('[data-toc]')?.removeAttribute('open');</script>
 
-    <p class="report meta">Spotted a mistake in the article or the translation? Let us know through the <a href={reportUrl(`${article.title}（${url.href}）`)} target="_blank" rel="noopener">contact form</a> (in Japanese).</p>
+      <div class="article-main">
+        {body && (
+          <section id="details" class="prose" aria-labelledby="details-title">
+            <h2 id="details-title">A closer look</h2>
+            <Fragment set:html={body} />
+          </section>
+        )}
 
-    <Share title={article.title} url={url} id={video.id} lang="en" />
-    <SubscribeCTA lang="en" />
+        <details class="scenes-box" open>
+          <summary><h2 id="scenes">What the video says</h2></summary>
+          <ol class="scenes">
+            {article.scenes.map((s, i) => (
+              <li>
+                {images[i] && <img src={images[i]} alt={s.alt} loading="lazy" decoding="async" width="720" height={video.format === 'short' ? 1260 : 411} class:list={{ wide: video.format === 'longform' }} />}
+                <p>{s.text}</p>
+              </li>
+            ))}
+          </ol>
+        </details>
+
+        {article.sources && article.sources.length > 0 && (
+          <section class="sources" aria-labelledby="sources">
+            <h2 id="sources">Sources</h2>
+            <ol>
+              {article.sources.map((s) => (
+                <li>
+                  <a href={s.url} target="_blank" rel="noopener" lang={s.lang} hreflang={s.lang}>{s.title}</a>
+                  {s.lang === 'ja' && <span class="lang-badge">Japanese</span>}
+                  {s.titleEn && <span class="source-sub">“{s.titleEn}”</span>}
+                  <span class="source-sub">{s.publisher}</span>
+                </li>
+              ))}
+            </ol>
+          </section>
+        )}
+
+        <div class="report">
+          <p>Spotted a mistake in the article or the translation? Let us know.</p>
+          <a class="btn btn-ghost" href={reportUrl(`${article.title}（${url.href}）`)} target="_blank" rel="noopener">Report an error<span class="visually-hidden"> (contact form in Japanese, opens in a new tab)</span></a>
+        </div>
+
+        <Share title={article.title} url={url} id={video.id} lang="en" />
+      </div>
+    </div>
   </article>
 
   {relatedEn.length > 0 && (
-    <section class="section">
-      <h2 class="section-title">More to read</h2>
+    <section class="section" aria-labelledby="related-title">
+      <h2 id="related-title" class="section-title">More to read</h2>
       <div class="grid">
         {relatedEn.map(({ video: v, en }) => (
           <a class="card" href={enUrl(v.id)}>
@@ -142,4 +173,6 @@ const jsonLd = [
       </div>
     </section>
   )}
+
+  <SubscribeCTA lang="en" />
 </Base>

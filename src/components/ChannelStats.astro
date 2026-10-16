@@ -1,7 +1,8 @@
 ---
 // チャンネル全体の数字（YouTube の公開データ）。取れなかったビルドでは何も出さない
 import { youtube } from '../lib/youtube';
-interface Props { tone?: 'dark' | 'light' }
+// tone: card はトップのヒーローの下に重ねる白いカード、light は「このサイトについて」
+interface Props { tone?: 'card' | 'light' }
 const { tone = 'light' } = Astro.props;
 
 // 1万以上は「12.8万」のように万でまとめる
