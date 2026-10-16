@@ -71,6 +71,9 @@ sources:
 本文（Markdown）＝「もう少し詳しく」
 ```
 
+- 太字の `**` は「**約24時間のリズム（体内時計）**が」のように約物のすぐあとで閉じても効く（remark-cjk-friendly）
+- `pnpm build` のあとに `scripts/check-dist.mjs` が、`**` などの Markdown の記号が変換されずに画面に残っていないかを調べ、残っていればビルドを失敗にする（CI でも同じ）
+
 ## 英語版の記事
 
 記事ページだけ英語版がある（`/en/trivia/<動画ID>/`）。日本語の台本と加筆（notes）を Claude で翻訳し、`src/translations/en/<動画ID>.md` に置く。
