@@ -1,9 +1,10 @@
 ---
 // パンくずリスト。最後の項目（いま見ているページ）はリンクにしない
-interface Props { items: { name: string; href?: string }[] }
-const { items } = Astro.props;
+import { UI, type Lang } from '../lib/i18n';
+interface Props { items: { name: string; href?: string }[]; lang?: Lang }
+const { items, lang = 'ja' } = Astro.props;
 ---
-<nav class="breadcrumb" aria-label="パンくずリスト">
+<nav class="breadcrumb" aria-label={UI[lang].breadcrumb}>
   <ol>
     {items.map((item, i) => (
       <li>

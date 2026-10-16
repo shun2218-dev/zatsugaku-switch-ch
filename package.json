@@ -5,6 +5,7 @@
   "scripts": {
     "export": "node scripts/export.mjs",
     "sync": "node scripts/sync.mjs",
+    "translate": "node scripts/translate.mjs",
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview"
@@ -14,8 +15,10 @@
     "astro": "^7.3.7"
   },
   "devDependencies": {
+    "@anthropic-ai/sdk": "^0.135.0",
     "pg": "^8.23.1",
-    "sharp": "^0.35.5"
+    "sharp": "^0.35.5",
+    "yaml": "^2.9.1"
   },
   "packageManager": "pnpm@12.6.0"
 }

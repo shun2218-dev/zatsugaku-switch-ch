@@ -2,6 +2,7 @@
 // 使い方: pnpm sync              書き出しからマージまで
 //         pnpm sync --no-merge   PR を作るところまで（GitHub で中身を見てからマージする）
 //         pnpm sync --dry-run    書き出しとビルドの確認だけ（git は触らない）
+// 新しい動画は英語にも翻訳して下書きとして入れる（src/translations/en。人が reviewedAt を入れるまで公開されない）
 // マージすると main への push で GitHub Actions が公開する。YTAutomator の DB が起動している必要がある
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
@@ -19,8 +20,8 @@ const fail = (msg) => {
   process.exit(1);
 };
 
-// 書き出しで変わるファイル
-const DATA = ['src/data/videos.json', 'public/img'];
+// 書き出し・翻訳で変わるファイル
+const DATA = ['src/data/videos.json', 'public/img', 'src/translations'];
 const exported = () => JSON.parse(readFileSync(path.join(ROOT, 'src/data/videos.json'), 'utf8'));
 
 if (!dryRun) {
@@ -35,9 +36,17 @@ try {
 } catch {
   fail('書き出しに失敗しました。YTAutomator の DB（docker）が起動しているか確かめてください');
 }
+const added = exported().filter((v) => !before.has(v.id));
+// 英語の下書き（--dry-run では作らない）。失敗しても記事の公開は止めない（あとで pnpm translate --missing で作れる）
+if (added.length && !dryRun) {
+  try {
+    run('pnpm', 'translate', ...added.map((v) => v.id));
+  } catch {
+    console.warn('[sync] 英語の下書きを作れませんでした。あとで pnpm translate --missing を実行してください');
+  }
+}
 run('pnpm', 'build'); // 壊れていないかを確かめる
 
-const added = exported().filter((v) => !before.has(v.id));
 if (!out('git', 'status', '--porcelain', '--', ...DATA)) {
   console.log('[sync] 変更はありません');
   process.exit(0);
