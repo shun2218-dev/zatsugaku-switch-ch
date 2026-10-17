@@ -59,7 +59,7 @@ const description = lang === 'en' ? 'Search the trivia articles of Zatsugaku Swi
     },
   }[lang];
   // 英語は単語が長いので、抜き出す本文を広めにとる
-  const SNIPPET = lang === 'en' ? { before: 40, after: 100 } : { before: 24, after: 56 };
+  const SNIPPET = lang === 'en' ? { before: 70, after: 110 } : { before: 24, after: 56 };
 
   type Entry = { id: string; t: string; c: string; k: string; g: string[]; h: string; b: string; i: string; l: number; n: number; v: number };
 
@@ -78,21 +78,37 @@ const description = lang === 'en' ? 'Search the trivia articles of Zatsugaku Swi
 
   let index: (Entry & { nt: string; ng: string; nh: string; nb: string })[] = [];
 
-  // 本文の一致箇所の前後を抜き出し、一致部分を <mark> で囲む
+  // 抜き出しの始まり。文の途中から「…」で始めると読みにくいので、一致した箇所を含む文の頭から始める。
+  // 文が長くて一致箇所が見えなくなりそうなら、文の中の読点（、 ,）のあとから始める
+  const SENTENCE_END = /^(?:[。！？!?]|\.\s)/;
+  const CLAUSE_END = /^[、，,]/;
+  function snippetStart(text: string, pos: number) {
+    const after = (re: RegExp, from: number, limit: number) => {
+      for (let i = from - 1; i >= limit; i--) if (re.test(text.slice(i, i + 2))) return i + 1;
+      return limit === 0 ? 0 : -1;
+    };
+    const skipSpace = (i: number) => (/\s/.test(text[i] ?? '') ? skipSpace(i + 1) : i);
+    const sentence = skipSpace(after(SENTENCE_END, pos, 0));
+    if (pos - sentence <= SNIPPET.before) return sentence;
+    const clause = after(CLAUSE_END, pos, Math.max(sentence, pos - SNIPPET.before));
+    return clause >= 0 ? skipSpace(clause) : sentence;
+  }
+
+  // 本文の一致箇所のまわりを抜き出し、一致部分を <mark> で囲む
   function snippet(e: Entry & { nb: string }, terms: string[]) {
     const pos = Math.min(...terms.map((t) => e.nb.indexOf(t)).filter((p) => p >= 0));
     if (!Number.isFinite(pos)) return esc(e.h);
     // 正規化で文字数が変わった本文は位置がずれるので、ハイライトせず要約を出す
     if (e.nb.length !== e.b.length) return esc(e.h);
-    const start = Math.max(0, pos - SNIPPET.before);
-    const end = Math.min(e.b.length, pos + SNIPPET.after);
+    const start = snippetStart(e.b, pos);
+    const end = Math.min(e.b.length, Math.max(pos + SNIPPET.after, start + SNIPPET.before + SNIPPET.after));
     const marked = new Array<boolean>(end - start).fill(false);
     for (const t of terms) {
       for (let p = e.nb.indexOf(t, start); p >= 0 && p < end; p = e.nb.indexOf(t, p + 1)) {
         for (let k = p; k < Math.min(p + t.length, end); k++) marked[k - start] = true;
       }
     }
-    let html = start > 0 ? '…' : '';
+    let html = '';
     for (let k = 0; k < marked.length; ) {
       let j = k;
       while (j < marked.length && marked[j] === marked[k]) j++;

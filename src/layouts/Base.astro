@@ -59,6 +59,7 @@ const otherHref = alternates?.[other] ?? localePath(other, '/');
     <meta property="og:locale" content={lang === 'en' ? 'en_US' : 'ja_JP'} />
     {alternates && <meta property="og:locale:alternate" content={lang === 'en' ? 'ja_JP' : 'en_US'} />}
     <meta name="twitter:card" content="summary_large_image" />
+    <slot name="head" />
     {jsonLd.map((d) => <script type="application/ld+json" set:html={JSON.stringify(d)} />)}
     {GA_ID && <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}></script>}
     {GA_ID && (
@@ -155,5 +156,18 @@ const otherHref = alternates?.[other] ?? localePath(other, '/');
           : '動画と記事はAIを活用して制作し、公開前に運営者が確認しています。'}</p>
       </div>
     </footer>
+    <script>
+      import { startMotion } from '../lib/motion';
+      // トップのイントロが流れているあいだは見出しのスイッチが見えないので、終わってから動かす
+      if (document.documentElement.dataset.intro === 'play') {
+        new MutationObserver((_, o) => {
+          if (document.documentElement.dataset.intro) return;
+          o.disconnect();
+          startMotion();
+        }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-intro'] });
+      } else {
+        startMotion();
+      }
+    </script>
   </body>
 </html>

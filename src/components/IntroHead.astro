@@ -1,0 +1,12 @@
+---
+// イントロ（Intro.astro）を流すかどうかを、ページが描かれる前に決める。Base の head スロットに入れる
+---
+<script is:inline>
+  (() => {
+    try {
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches || sessionStorage.getItem('intro-seen')) return;
+      sessionStorage.setItem('intro-seen', '1');
+      document.documentElement.dataset.intro = 'play';
+    } catch {}
+  })();
+</script>

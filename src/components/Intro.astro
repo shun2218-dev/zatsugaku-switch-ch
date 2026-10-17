@@ -1,0 +1,51 @@
+---
+// トップページを開いたときのイントロ（約2.5秒）。ロゴの電球の口金のスイッチが入り、電球がちらついて点き、光が画面いっぱいに広がる。
+// 流すのはブラウザを閉じるまでに1回だけ。「視差効果を減らす」設定の人には流さない。画面のどこを押しても（キーでも）飛ばせる。
+// 流すかどうかは IntroHead が <head> の中で html[data-intro] に決めるので、ページが一瞬見えてしまうことはない。
+// 中身は飾りなので読み上げない（aria-hidden）。ページ本体は最初から読み込まれていて、検索エンジンにも見える
+import type { Lang } from '../lib/i18n';
+interface Props { lang?: Lang }
+const { lang = 'ja' } = Astro.props;
+---
+<div class="intro" aria-hidden="true" data-intro-overlay>
+  <div class="intro-flood"></div>
+  <div class="intro-center">
+    <svg class="intro-bulb" viewBox="0 0 120 160">
+      <g class="intro-rays">
+        <path d="M60 2v-12M22 16l-9-9M98 16l9-9M8 52h-13M112 52h13M16 86l-10 7M104 86l10 7" />
+      </g>
+      <path class="intro-glass" d="M44 100c0-12-13-19-17-33a36 36 0 1 1 66 0c-4 14-17 21-17 33z" />
+      <path class="intro-shine" d="M62 23a28 28 0 0 1 21 15" />
+      <path class="intro-filament" d="M53 100V74M67 100V74M53 74c-11 0-12-14-2-14 6 0 9 7 9 12 0-5 3-12 9-12 10 0 9 14-2 14" />
+      <rect class="intro-base" x="31" y="98" width="58" height="40" rx="10" />
+      <rect class="intro-track" x="39" y="108" width="42" height="20" rx="10" />
+      <circle class="intro-knob" cx="49" cy="118" r="7.5" />
+      <rect class="intro-nub" x="49" y="136" width="22" height="9" rx="4.5" />
+    </svg>
+    <p class="intro-word">{lang === 'en' ? 'Curiosity: ON' : '好奇心、ON。'}</p>
+  </div>
+</div>
+
+<script>
+  const intro = document.querySelector<HTMLElement>('[data-intro-overlay]');
+  const root = document.documentElement;
+  if (intro && root.dataset.intro === 'play') {
+    let done = false;
+    const finish = (skipped: boolean) => {
+      if (done) return;
+      done = true;
+      intro.classList.add(skipped ? 'is-skipped' : 'is-leaving');
+      setTimeout(() => {
+        delete root.dataset.intro;
+        intro.remove();
+      }, skipped ? 200 : 450);
+    };
+    // 光が画面を満たしたら消える。途中で押されたら、すぐに消す
+    intro.querySelector('.intro-flood')!.addEventListener('animationend', () => finish(false));
+    for (const ev of ['pointerdown', 'keydown', 'wheel', 'touchstart'] as const) addEventListener(ev, () => finish(true), { once: true, passive: true });
+    // アニメーションが動かない環境でも、閉じ込めたままにしない
+    setTimeout(() => finish(false), 4000);
+  } else {
+    intro?.remove();
+  }
+</script>
