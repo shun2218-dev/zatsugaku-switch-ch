@@ -1,0 +1,24 @@
+---
+// 雑学一覧（/trivia/ と /en/trivia/）
+import Base from '../../layouts/Base.astro';
+import VideoCard from '../VideoCard.astro';
+import SearchForm from '../SearchForm.astro';
+import NoteFilter from '../NoteFilter.astro';
+import CategoryLinks from '../CategoryLinks.astro';
+import { videos } from '../../lib/data';
+import { UI, type Lang, alternatesOf, inLang } from '../../lib/i18n';
+interface Props { lang?: Lang }
+const { lang = 'ja' } = Astro.props;
+const list = inLang(videos, lang);
+const title = lang === 'en' ? 'All trivia' : '雑学一覧';
+const description = lang === 'en'
+  ? `All ${list.length} trivia articles from Zatsugaku Switch, translated into English by AI.`
+  : `雑学スイッチで紹介した雑学${list.length}本の一覧です。`;
+---
+<Base lang={lang} title={title} description={description} alternates={alternatesOf('/trivia/')}>
+  <h1 class="page-title">{title}<span>{UI[lang].count(list.length)}</span></h1>
+  <SearchForm id="list-q" class="search-page" lang={lang} />
+  <CategoryLinks lang={lang} />
+  <NoteFilter videos={list} lang={lang} />
+  <div class="grid" data-note-grid>{list.map((v) => <VideoCard video={v} lang={lang} />)}</div>
+</Base>

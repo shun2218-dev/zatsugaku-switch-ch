@@ -1,0 +1,39 @@
+---
+import Base from '../../layouts/Base.astro';
+import SubscribeCTA from '../../components/SubscribeCTA.astro';
+import ChannelStats from '../../components/ChannelStats.astro';
+import { SITE } from '../../lib/site';
+import { alternatesOf } from '../../lib/i18n';
+---
+<Base lang="en" title="About this site" description="What Zatsugaku Switch is, how AI is used to make the videos and articles, and how we handle accuracy and translation." alternates={alternatesOf('/about/')}>
+  <article class="article prose narrow">
+    <h1 class="page-title">About this site</h1>
+
+    <h2>What is Zatsugaku Switch?</h2>
+    <p><span lang="ja">雑学スイッチ</span> (Zatsugaku Switch, “trivia switch”) is a Japanese YouTube channel that answers everyday “why?” questions in short videos of about 30 seconds. It covers the sky and weather, food, the human body, how familiar things work, and other trivia you’ll want to share with someone.</p>
+    <p>This site turns the trivia from the videos into articles, adding details and sources that didn’t fit in the videos.</p>
+    <ChannelStats lang="en" />
+
+    <h2>How AI is used</h2>
+    <p>The planning, scripts, narration and illustrations of the videos are made with the help of AI (large language models, speech synthesis and image generation). The Japanese articles on this site are also written with AI, based on the video scripts.</p>
+    <p>All videos and Japanese articles are checked by the site owner before publishing.</p>
+
+    <h2>About the English pages</h2>
+    <ul>
+      <li>The English pages are translated from the Japanese pages with AI and are published without waiting for a human check. Each article says so at the top, and they may contain mistakes.</li>
+      <li>Articles that the site owner has checked show “checked by the site owner” instead.</li>
+      <li>The videos themselves are in Japanese.</li>
+    </ul>
+
+    <h2>Accuracy</h2>
+    <ul>
+      <li>In the “Sources” section of each article, we try to list materials as close to primary sources as possible, such as public institutions, academic papers and dictionaries.</li>
+      <li>When a widely told story has no clear evidence, the article says so.</li>
+      <li>If you spot a mistake, please let us know through the <a href={SITE.contactUrl} target="_blank" rel="noopener">contact form</a> (in Japanese; you can write in English). We will check and correct it.</li>
+    </ul>
+
+    <h2>Who runs this site</h2>
+    <p>This site is run by an individual in Japan. Comments, feedback and requests for “why?” questions you’d like us to cover are welcome through the <a href={SITE.contactUrl} target="_blank" rel="noopener">contact form</a>.</p>
+  </article>
+  <SubscribeCTA lang="en" />
+</Base>

@@ -2,22 +2,24 @@
 // 詳細記事の有無で一覧を絞り込むボタン。videos を渡すと件数を出し、data-note-grid の中のカードを隠す
 // 検索ページは videos を渡さず、件数と絞り込みを自分のスクリプトで行う
 import { type Video, hasNote } from '../lib/data';
-import { NOTE_FILTERS } from '../lib/noteFilter';
-interface Props { videos?: Video[] }
-const { videos } = Astro.props;
+import { NOTE_FILTERS, NOTE_FILTER_TEXT } from '../lib/noteFilter';
+import type { Lang } from '../lib/i18n';
+interface Props { videos?: Video[]; lang?: Lang }
+const { videos, lang = 'ja' } = Astro.props;
+const text = NOTE_FILTER_TEXT[lang];
 const count = (value: string) =>
   videos && (value === 'all' ? videos.length : videos.filter((v) => hasNote(v.id) === (value === 'yes')).length);
 ---
 <div class="note-filter" role="radiogroup" aria-labelledby="note-filter-label" data-note-filter>
-  <span id="note-filter-label" class="filter-label">詳細記事</span>
-  {NOTE_FILTERS.map(({ value, label }) => (
+  <span id="note-filter-label" class="filter-label">{text.label}</span>
+  {NOTE_FILTERS(lang).map(({ value, label }) => (
     <label class="note-filter-opt">
       <input type="radio" name="note" value={value} checked={value === 'all'} />
       <span class="note-filter-chip">{label}<span class="note-filter-count" data-count={value}>{count(value)}</span></span>
     </label>
   ))}
 </div>
-<p class="note-filter-empty" data-note-empty hidden>この条件に当てはまる雑学はまだありません。</p>
+<p class="note-filter-empty" data-note-empty hidden>{text.empty}</p>
 
 <script>
   import { readNoteFilter, matchesNote, type NoteFilter } from '../lib/noteFilter';

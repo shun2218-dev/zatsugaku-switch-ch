@@ -373,6 +373,10 @@ html[lang='en'] .prose { font-size: 1.12rem; line-height: 1.75; }
 .footer-brand { flex: 1 1 240px; }
 .footer-brand p { margin: 0; }
 .footer-name { margin-bottom: 8px !important; font-family: var(--font-display); font-weight: 900; font-size: 1.35rem; color: var(--amber); }
+.footer-lang { margin-top: 16px !important; }
+/* ヘッダーの言語切り替えは狭い画面で省くので、フッターにももう一方の言語へのリンクを置く */
+.footer-lang a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 1.2em; border: 1px solid rgb(255 255 255 / .3); border-radius: 999px; color: #fff; font-weight: 700; text-decoration: none; }
+.footer-lang a:hover { border-color: var(--amber); color: var(--amber); }
 .footer-nav { flex: 1 1 160px; }
 /* 見出しは黄色の小さめの太字＋下線、リンクは落ち着いた色の通常の太さにして、見出しとリンクの差をはっきりさせる */
 .footer-nav-title { margin: 0 0 10px; padding-bottom: 10px; border-bottom: 1px solid rgb(255 255 255 / .14); color: var(--amber); font-size: .8rem; font-weight: 700; letter-spacing: .12em; }

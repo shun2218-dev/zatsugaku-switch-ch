@@ -1,26 +1,34 @@
 ---
 // チャンネル全体の数字（YouTube の公開データ）。取れなかったビルドでは何も出さない
 import { youtube } from '../lib/youtube';
+import type { Lang } from '../lib/i18n';
 // tone: card はトップのヒーローの下に重ねる白いカード、light は「このサイトについて」
-interface Props { tone?: 'card' | 'light' }
-const { tone = 'light' } = Astro.props;
+interface Props { tone?: 'card' | 'light'; lang?: Lang }
+const { tone = 'light', lang = 'ja' } = Astro.props;
 
-// 1万以上は「12.8万」のように万でまとめる
+// 日本語は1万以上を「12.8万」のように万で、英語は「12.8K」のようにまとめる
 const count = (n: number) =>
-  n >= 10_000 ? `${(n / 10_000).toFixed(n >= 1_000_000 ? 0 : 1).replace(/\.0$/, '')}万` : n.toLocaleString('ja-JP');
+  lang === 'en'
+    ? new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 }).format(n)
+    : n >= 10_000 ? `${(n / 10_000).toFixed(n >= 1_000_000 ? 0 : 1).replace(/\.0$/, '')}万` : n.toLocaleString('ja-JP');
+
+const L = {
+  ja: { subscribers: 'チャンネル登録者', views: '総再生回数', videos: '公開中の動画', likes: '高評価（合計）', units: ['人', '回', '本', '件'] },
+  en: { subscribers: 'Subscribers', views: 'Total views', videos: 'Videos', likes: 'Likes (all videos)', units: ['', '', '', ''] },
+}[lang];
 
 const c = youtube?.channel;
 const items = c
   ? [
-      c.subscribers !== null && { label: 'チャンネル登録者', value: count(c.subscribers), unit: '人' },
-      { label: '総再生回数', value: count(c.views), unit: '回' },
-      { label: '公開中の動画', value: count(c.videos), unit: '本' },
-      { label: '高評価（合計）', value: count(c.likes), unit: '件' },
+      c.subscribers !== null && { label: L.subscribers, value: count(c.subscribers), unit: L.units[0] },
+      { label: L.views, value: count(c.views), unit: L.units[1] },
+      { label: L.videos, value: count(c.videos), unit: L.units[2] },
+      { label: L.likes, value: count(c.likes), unit: L.units[3] },
     ].filter((i) => i !== false)
   : [];
 const fetchedAt = youtube?.fetchedAt ?? '';
 const asOf = fetchedAt
-  ? new Intl.DateTimeFormat('ja-JP', { timeZone: 'Asia/Tokyo', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(fetchedAt))
+  ? new Intl.DateTimeFormat(lang === 'en' ? 'en-US' : 'ja-JP', { timeZone: 'Asia/Tokyo', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', ...(lang === 'en' && { timeZoneName: 'short' }) }).format(new Date(fetchedAt))
   : '';
 ---
 {items.length > 0 && (
@@ -33,6 +41,8 @@ const asOf = fetchedAt
         </div>
       ))}
     </dl>
-    <p class="stats-note">YouTube の公開データ（<time datetime={fetchedAt}>{asOf}</time> 時点）</p>
+    {lang === 'en'
+      ? <p class="stats-note">Public YouTube data as of <time datetime={fetchedAt}>{asOf}</time></p>
+      : <p class="stats-note">YouTube の公開データ（<time datetime={fetchedAt}>{asOf}</time> 時点）</p>}
   </div>
 )}

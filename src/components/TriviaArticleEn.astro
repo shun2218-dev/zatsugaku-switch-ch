@@ -5,6 +5,7 @@ import Share from './Share.astro';
 import Breadcrumb from './Breadcrumb.astro';
 import CategoryIcon from './CategoryIcon.astro';
 import SubscribeCTA from './SubscribeCTA.astro';
+import VideoCard from './VideoCard.astro';
 import { SITE, reportUrl } from '../lib/site';
 import { related, thumb, watchUrl } from '../lib/data';
 import { type EnArticle, CATEGORY_NAME_EN, enArticleOf, enUrl, jaUrl } from '../lib/i18n';
@@ -14,6 +15,7 @@ interface Props { article: EnArticle }
 const { article } = Astro.props;
 const { video } = article;
 const catName = CATEGORY_NAME_EN[video.category];
+const catUrl = `/en/category/${video.category}/`;
 const url = new URL(Astro.url.pathname, Astro.site);
 const description = article.answer.slice(0, 160);
 const dateOf = (d: string) => new Date(d).toLocaleDateString('en-US', { timeZone: 'Asia/Tokyo', year: 'numeric', month: 'long', day: 'numeric' });
@@ -28,7 +30,7 @@ const body = (await article.html()).replace(/<a href="\/trivia\/([^/"]+)\/">([\s
 );
 // 目次: 「A closer look」の小見出し（本文の h3）
 const headings = [...body.matchAll(/<h3 id="([^"]+)">([\s\S]*?)<\/h3>/g)].map(([, slug, html]) => ({ slug, text: html.replace(/<[^>]+>/g, '') }));
-const relatedEn = related(video, 40).filter((v) => enArticleOf(v.id)).slice(0, 4).map((v) => ({ video: v, en: enArticleOf(v.id)! }));
+const relatedEn = related(video, 40).filter((v) => enArticleOf(v.id)).slice(0, 4);
 
 const jsonLd = [
   {
@@ -60,21 +62,21 @@ const jsonLd = [
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Home', item: new URL('/', Astro.site).href },
-      { '@type': 'ListItem', position: 2, name: catName },
+      { '@type': 'ListItem', position: 1, name: 'Home', item: new URL('/en/', Astro.site).href },
+      { '@type': 'ListItem', position: 2, name: catName, item: new URL(catUrl, Astro.site).href },
       { '@type': 'ListItem', position: 3, name: article.title },
     ],
   },
 ];
 ---
 <Base lang="en" title={article.title} description={description} image={thumb(video)} type="article" jsonLd={jsonLd} contentGroup="English article" alternates={{ ja: jaUrl(video.id), en: enUrl(video.id) }}>
-  <Breadcrumb lang="en" items={[{ name: 'Home', href: '/' }, { name: catName }, { name: article.title }]} />
+  <Breadcrumb lang="en" items={[{ name: 'Home', href: '/en/' }, { name: catName, href: catUrl }, { name: article.title }]} />
 
   <article class="article">
     <p class="translation-note"><strong>AI translation.</strong> This article was translated from the <a href={jaUrl(video.id)} lang="ja" hreflang="ja">Japanese original</a> by AI{article.reviewedAt ? ' and checked by the site owner' : ', and may contain mistakes'}. The video is in Japanese.</p>
 
     <header class="article-head">
-      <span class="card-cat"><CategoryIcon slug={video.category} />{catName}</span>
+      <a class="card-cat" href={catUrl}><CategoryIcon slug={video.category} />{catName}</a>
       <h1>{article.title}</h1>
       <ul class="article-meta">
         <li>Video published <time datetime={video.publishedAt}>{dateOf(video.publishedAt)}</time></li>
@@ -158,22 +160,13 @@ const jsonLd = [
     </div>
   </article>
 
-  {relatedEn.length > 0 && (
-    <section class="section" aria-labelledby="related-title">
+  <section class="section" aria-labelledby="related-title">
+    <div class="section-head">
       <h2 id="related-title" class="section-title">More to read</h2>
-      <div class="grid">
-        {relatedEn.map(({ video: v, en }) => (
-          <a class="card" href={enUrl(v.id)}>
-            <div class="card-img"><img src={thumb(v)} alt="" loading="lazy" decoding="async" width="720" height="1260" /></div>
-            <div class="card-body">
-              <div class="card-meta"><span class="card-cat"><CategoryIcon slug={v.category} />{CATEGORY_NAME_EN[v.category]}</span></div>
-              <h3>{en.title}</h3>
-            </div>
-          </a>
-        ))}
-      </div>
-    </section>
-  )}
+      <p class="more"><a href={catUrl}>See all {catName.toLowerCase()} trivia →</a></p>
+    </div>
+    {relatedEn.length > 0 && <div class="grid">{relatedEn.map((v) => <VideoCard video={v} lang="en" />)}</div>}
+  </section>
 
   <SubscribeCTA lang="en" />
 </Base>

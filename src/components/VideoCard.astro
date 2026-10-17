@@ -1,24 +1,25 @@
 ---
-import { type Video, thumb, categoryOf, hasNote } from '../lib/data';
+import { type Video, thumb, hasNote } from '../lib/data';
 import { noteIconSvg } from '../lib/icons';
+import { UI, type Lang, articleUrl, categoryName, titleOf } from '../lib/i18n';
 import CategoryIcon from './CategoryIcon.astro';
-interface Props { video: Video; showCategory?: boolean }
-const { video, showCategory = true } = Astro.props;
-const cat = categoryOf(video.category);
+interface Props { video: Video; showCategory?: boolean; lang?: Lang }
+const { video, showCategory = true, lang = 'ja' } = Astro.props;
+const t = UI[lang];
 const note = hasNote(video.id);
 ---
-<a class="card" href={`/trivia/${video.id}/`} data-note={note ? '1' : '0'}>
+<a class="card" href={articleUrl(video.id, lang)} data-note={note ? '1' : '0'}>
   <div class="card-img">
     <img src={thumb(video)} alt="" loading="lazy" decoding="async" width="720" height="1260" />
-    {video.format === 'longform' && <span class="badge">じっくり解説</span>}
+    {video.format === 'longform' && <span class="badge">{t.longform}</span>}
   </div>
   <div class="card-body">
     {(showCategory || note) && (
       <div class="card-meta">
-        {showCategory && <span class="card-cat"><CategoryIcon slug={cat.slug} />{cat.name}</span>}
-        {note && <span class="note-badge"><Fragment set:html={noteIconSvg()} />詳細記事</span>}
+        {showCategory && <span class="card-cat"><CategoryIcon slug={video.category} />{categoryName(video.category, lang)}</span>}
+        {note && <span class="note-badge"><Fragment set:html={noteIconSvg()} />{t.note}</span>}
       </div>
     )}
-    <h3>{video.title}</h3>
+    <h3>{titleOf(video, lang)}</h3>
   </div>
 </a>

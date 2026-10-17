@@ -5,10 +5,10 @@ import '@fontsource/biz-udpgothic/700.css';
 import '@fontsource/zen-maru-gothic/700.css';
 import '@fontsource/zen-maru-gothic/900.css';
 import '../styles/global.css';
-import { SITE, GA_ID, subscribeUrl } from '../lib/site';
+import { SITE, SITE_EN, GA_ID, subscribeUrl } from '../lib/site';
 import { categories } from '../lib/data';
 import SearchForm from '../components/SearchForm.astro';
-import { UI, LANG_LABEL, type Lang } from '../lib/i18n';
+import { UI, LANG_LABEL, type Lang, categoryName, localePath } from '../lib/i18n';
 
 interface Props {
   title?: string;
@@ -19,18 +19,22 @@ interface Props {
   noindex?: boolean;
   /** アクセス解析でページをまとめる区分（記事ページの「詳細記事あり／なし」など） */
   contentGroup?: string;
-  /** ページの言語。英語は記事ページ（/en/trivia/）だけ */
+  /** ページの言語。英語のページは /en/ の下に置く */
   lang?: Lang;
   /** 同じ内容の別の言語のページ。あるときはヘッダーに言語の切り替えを出し、hreflang でつなぐ */
   alternates?: Record<Lang, string>;
 }
-const { title, description = SITE.description, image = '/og-default.jpg', type = 'website', jsonLd = [], noindex = false, contentGroup, lang = 'ja', alternates } = Astro.props;
+const { title, description = Astro.props.lang === 'en' ? SITE_EN.description : SITE.description, image = '/og-default.jpg', type = 'website', jsonLd = [], noindex = false, contentGroup, lang = 'ja', alternates } = Astro.props;
 const t = UI[lang];
 // トップは「雑学スイッチ 公式サイト」で名前を探す人に合わせる。ほかのページは「<ページ名>｜雑学スイッチ」
-const fullTitle = lang === 'en' ? `${title} | ${t.siteName}` : title ? `${title}｜${SITE.name}` : `${SITE.name} 公式サイト｜${SITE.tagline}`;
+const fullTitle = lang === 'en' ? (title ? `${title} | ${t.siteName}` : `${t.siteName} | ${SITE_EN.tagline}`) : title ? `${title}｜${SITE.name}` : `${SITE.name} 公式サイト｜${SITE.tagline}`;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const ogImage = new URL(image, Astro.site);
 const langs = Object.keys(LANG_LABEL) as Lang[];
+const p = (path: string) => localePath(lang, path);
+// フッターの言語の切り替え。同じ内容のページがなければ、もう一方の言語のトップへ
+const other: Lang = lang === 'en' ? 'ja' : 'en';
+const otherHref = alternates?.[other] ?? localePath(other, '/');
 ---
 <!doctype html>
 <html lang={lang}>
@@ -47,7 +51,7 @@ const langs = Object.keys(LANG_LABEL) as Lang[];
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="theme-color" content="#1b2a4a" />
     <meta property="og:site_name" content={t.siteName} />
-    <meta property="og:title" content={title ?? SITE.name} />
+    <meta property="og:title" content={title ?? t.siteName} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content={type} />
     <meta property="og:url" content={canonical} />
@@ -80,17 +84,14 @@ const langs = Object.keys(LANG_LABEL) as Lang[];
     <a class="skip-link" href="#main">{lang === 'en' ? 'Skip to content' : '本文へスキップ'}</a>
     <header class="site-header">
       <div class="wrap header-inner">
-        <a href="/" class="logo" hreflang={lang === 'en' ? 'ja' : undefined}>
+        <a href={p('/')} class="logo">
           <img src="/icon.webp" alt="" width="36" height="36" />
           <span>{t.siteName}</span>
         </a>
-        {/* 検索は日本語の記事だけが対象なので、英語のページには出さない */}
-        {lang === 'ja' && <SearchForm id="header-q" class="header-search" />}
-        {lang === 'ja' && (
-          <a class="header-search-icon" href="/search/" aria-label="雑学を検索">
-            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2.4" /><path d="m16.5 16.5 4.5 4.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" /></svg>
-          </a>
-        )}
+        <SearchForm id="header-q" class="header-search" lang={lang} />
+        <a class="header-search-icon" href={p('/search/')} aria-label={lang === 'en' ? 'Search trivia' : '雑学を検索'}>
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2.4" /><path d="m16.5 16.5 4.5 4.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" /></svg>
+        </a>
         {alternates && (
           <nav class="lang-switch" aria-label={t.languageNav}>
             {langs.map((l) => (l === lang
@@ -108,39 +109,28 @@ const langs = Object.keys(LANG_LABEL) as Lang[];
     </main>
     <footer class="site-footer">
       <div class="wrap">
-        {lang === 'en' ? (
-          <div class="footer-grid">
-            <div class="footer-brand">
-              <p class="footer-name">{t.siteName}</p>
-              <p>Everyday "why?" questions, answered in 30 seconds.</p>
-            </div>
+        <div class="footer-grid">
+          <div class="footer-brand">
+            <p class="footer-name">{t.siteName}</p>
+            <p>{lang === 'en' ? SITE_EN.tagline : SITE.tagline}</p>
+            <p class="footer-lang"><a href={otherHref} lang={other} hreflang={other} data-ga-event="language_switch" data-ga-language={other} data-ga-placement="footer">{LANG_LABEL[other]}</a></p>
+          </div>
+          <nav class="footer-nav" aria-labelledby="footer-cats">
+            <p id="footer-cats" class="footer-nav-title">{lang === 'en' ? 'Categories' : 'カテゴリ'}</p>
+            <ul>{categories.map((c) => <li><a href={p(`/category/${c.slug}/`)}>{categoryName(c.slug, lang)}</a></li>)}</ul>
+          </nav>
+          {lang === 'en' ? (
             <nav class="footer-nav" aria-labelledby="footer-site">
               <p id="footer-site" class="footer-nav-title">Site</p>
               <ul>
-                <li><a href="/" hreflang="ja">Home <span class="lang-note">(Japanese)</span></a></li>
-                <li><a href="/about/" hreflang="ja">About <span class="lang-note">(Japanese)</span></a></li>
-                <li><a href={SITE.contactUrl} target="_blank" rel="noopener">Contact</a></li>
+                <li><a href="/en/trivia/">All trivia</a></li>
+                <li><a href="/en/search/">Search</a></li>
+                <li><a href="/en/about/">About this site</a></li>
+                <li><a href={SITE.contactUrl} target="_blank" rel="noopener">Contact <span class="lang-note">(form in Japanese)</span></a></li>
                 <li><a href={SITE.channelUrl} target="_blank" rel="noopener" data-ga-event="channel_click" data-ga-placement="footer">YouTube</a></li>
               </ul>
             </nav>
-            <nav class="footer-nav" aria-labelledby="footer-legal">
-              <p id="footer-legal" class="footer-nav-title">Legal</p>
-              <ul>
-                <li><a href="/privacy/" hreflang="ja">Privacy policy <span class="lang-note">(Japanese)</span></a></li>
-                <li><a href="/terms/" hreflang="ja">Terms <span class="lang-note">(Japanese)</span></a></li>
-              </ul>
-            </nav>
-          </div>
-        ) : (
-          <div class="footer-grid">
-            <div class="footer-brand">
-              <p class="footer-name">{SITE.name}</p>
-              <p>{SITE.tagline}</p>
-            </div>
-            <nav class="footer-nav" aria-labelledby="footer-cats">
-              <p id="footer-cats" class="footer-nav-title">カテゴリ</p>
-              <ul>{categories.map((c) => <li><a href={`/category/${c.slug}/`}>{c.name}</a></li>)}</ul>
-            </nav>
+          ) : (
             <nav class="footer-nav" aria-labelledby="footer-site">
               <p id="footer-site" class="footer-nav-title">サイト</p>
               <ul>
@@ -151,15 +141,15 @@ const langs = Object.keys(LANG_LABEL) as Lang[];
                 <li><a href={SITE.channelUrl} target="_blank" rel="noopener" data-ga-event="channel_click" data-ga-placement="footer">YouTube</a></li>
               </ul>
             </nav>
-            <nav class="footer-nav" aria-labelledby="footer-legal">
-              <p id="footer-legal" class="footer-nav-title">規約</p>
-              <ul>
-                <li><a href="/privacy/">プライバシーポリシー</a></li>
-                <li><a href="/terms/">利用規約</a></li>
-              </ul>
-            </nav>
-          </div>
-        )}
+          )}
+          <nav class="footer-nav" aria-labelledby="footer-legal">
+            <p id="footer-legal" class="footer-nav-title">{lang === 'en' ? 'Legal' : '規約'}</p>
+            <ul>
+              <li><a href={p('/privacy/')}>{lang === 'en' ? 'Privacy policy' : 'プライバシーポリシー'}</a></li>
+              <li><a href={p('/terms/')}>{lang === 'en' ? 'Terms of use' : '利用規約'}</a></li>
+            </ul>
+          </nav>
+        </div>
         <p class="footer-note">{lang === 'en'
           ? 'The Japanese videos and articles are made with the help of AI and checked by the site owner before publishing. English pages are translated from Japanese with AI and may contain mistakes.'
           : '動画と記事はAIを活用して制作し、公開前に運営者が確認しています。'}</p>
