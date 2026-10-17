@@ -8,7 +8,7 @@ import SubscribeCTA from './SubscribeCTA.astro';
 import VideoCard from './VideoCard.astro';
 import { smallImage } from '../lib/images';
 import { SITE, reportUrl } from '../lib/site';
-import { related, thumb, watchUrl } from '../lib/data';
+import { noteOf, related, thumb, watchUrl } from '../lib/data';
 import { type EnArticle, CATEGORY_NAME_EN, enArticleOf, enUrl, jaUrl } from '../lib/i18n';
 
 // 雑学の記事の英語版（/en/trivia/<動画ID>/）。ルートは pages/en/trivia/[id].astro
@@ -18,7 +18,10 @@ const { video } = article;
 const catName = CATEGORY_NAME_EN[video.category];
 const catUrl = `/en/category/${video.category}/`;
 const url = new URL(Astro.url.pathname, Astro.site);
-const description = article.answer.slice(0, 160);
+// 説明文: 詳細記事があれば「In short」、なければ台本の英訳から（answer は動画の冒頭の問いかけなので説明にならない）。
+// 160字を超えるときは単語の切れ目で切って「…」をつける
+const summary = noteOf(video.id) ? article.answer : article.scenes.map((s) => s.text).join(' ');
+const description = summary.length <= 160 ? summary : `${summary.slice(0, 159).replace(/\s+\S*$/, '')}…`;
 const dateOf = (d: string) => new Date(d).toLocaleDateString('en-US', { timeZone: 'Asia/Tokyo', year: 'numeric', month: 'long', day: 'numeric' });
 const images = video.scenes.map((s) => s.image);
 const readMinutes = Math.max(1, Math.round((article.scenes.map((x) => x.text).join(' ').split(/\s+/).length + (await article.html()).replace(/<[^>]+>/g, ' ').split(/\s+/).length) / 230));

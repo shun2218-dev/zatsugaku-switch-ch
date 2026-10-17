@@ -29,6 +29,7 @@ const jsonLd = [
   {
     '@context': 'https://schema.org',
     '@type': 'Article',
+    inLanguage: 'ja',
     headline: video.title,
     description,
     image: [new URL(thumb(video), Astro.site).href],
@@ -41,6 +42,7 @@ const jsonLd = [
   {
     '@context': 'https://schema.org',
     '@type': 'VideoObject',
+    inLanguage: 'ja',
     name: video.title,
     description: video.description || description,
     thumbnailUrl: `https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`,
