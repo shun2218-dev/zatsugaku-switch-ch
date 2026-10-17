@@ -94,8 +94,10 @@ const jsonLd = [
               <span class="quiz-track" aria-hidden="true"></span>{text.reveal}
             </button>
             <div id="quiz-answer" class="quiz-answer" data-quiz-answer>
-              <p>{quizAnswer}</p>
-              <a href={articleUrl(quiz.id, lang)}>{text.readMore}</a>
+              <div class="quiz-answer-inner">
+                <p>{quizAnswer}</p>
+                <a href={articleUrl(quiz.id, lang)}>{text.readMore}</a>
+              </div>
             </div>
           </div>
         </article>
@@ -142,12 +144,15 @@ const jsonLd = [
   const button = document.querySelector<HTMLButtonElement>('[data-quiz-switch]');
   const answer = document.querySelector<HTMLElement>('[data-quiz-answer]');
   if (button && answer) {
+    // 答えは高さを0にしてたたんでおき、スイッチを入れるとするっと開く。たたんでいるあいだは読み上げ・キー操作の対象から外す
     button.hidden = false;
-    answer.hidden = true;
+    answer.classList.add('is-collapsible');
+    answer.inert = true;
     button.addEventListener('click', () => {
       const open = button.getAttribute('aria-expanded') !== 'true';
       button.setAttribute('aria-expanded', String(open));
-      answer.hidden = !open;
+      answer.classList.toggle('is-open', open);
+      answer.inert = !open;
     });
   }
 </script>
