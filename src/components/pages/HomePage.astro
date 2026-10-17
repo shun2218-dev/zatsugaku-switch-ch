@@ -2,6 +2,7 @@
 // トップページ（/ と /en/）。ルートは pages/index.astro と pages/en/index.astro
 import Base from '../../layouts/Base.astro';
 import VideoCard from '../VideoCard.astro';
+import { imageSrcset } from '../../lib/images';
 import SubscribeCTA from '../SubscribeCTA.astro';
 import SearchForm from '../SearchForm.astro';
 import CategoryIcon from '../CategoryIcon.astro';
@@ -85,7 +86,7 @@ const jsonLd = [
 
       {quiz && (
         <article class="quiz" aria-labelledby="quiz-title">
-          <img class="quiz-img" src={thumb(quiz)} alt="" width="720" height="1260" />
+          <img class="quiz-img" src={thumb(quiz)} srcset={imageSrcset(thumb(quiz))} sizes="(max-width: 479px) calc(100vw - 72px), 120px" alt="" fetchpriority="high" width="720" height="1260" />
           <div class="quiz-body">
             <p class="quiz-label">{text.quiz}</p>
             <h2 id="quiz-title"><a href={articleUrl(quiz.id, lang)}>{titleOf(quiz, lang)}</a></h2>

@@ -32,6 +32,7 @@ const description = lang === 'en' ? 'Search the trivia articles of Zatsugaku Swi
 <script>
   import { norm } from '../../lib/normalize';
   import { iconSvg, noteIconSvg } from '../../lib/icons';
+  import { imageSrcset, CARD_SIZES, EAGER_CARDS } from '../../lib/images';
   import { NOTE_FILTERS, NOTE_FILTER_TEXT, matchesNote, type NoteFilter } from '../../lib/noteFilter';
 
   // 画面の文言。ページの言語（<html lang>）で切り替える
@@ -159,9 +160,9 @@ const description = lang === 'en' ? 'Search the trivia articles of Zatsugaku Swi
     else status.textContent = T.none(q);
     results.innerHTML = hits
       .map(
-        ({ e }) => `
+        ({ e }, i) => `
         <a class="card" href="${T.base}/trivia/${e.id}/">
-          <div class="card-img"><img src="${e.i}" alt="" loading="lazy" decoding="async" width="720" height="1260" />${e.l ? `<span class="badge">${T.longform}</span>` : ''}</div>
+          <div class="card-img"><img src="${e.i}"${imageSrcset(e.i) ? ` srcset="${imageSrcset(e.i)}" sizes="${CARD_SIZES}"` : ''} alt="" ${i < EAGER_CARDS ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async" width="720" height="1260" />${e.l ? `<span class="badge">${T.longform}</span>` : ''}</div>
           <div class="card-body"><div class="card-meta"><span class="card-cat">${iconSvg(e.k)}${esc(e.c)}</span>${e.n ? `<span class="note-badge">${noteIconSvg()}${T.note}</span>` : ''}</div><h3>${esc(e.t)}</h3><p class="card-snippet">${snippet(e, terms)}</p></div>
         </a>`,
       )

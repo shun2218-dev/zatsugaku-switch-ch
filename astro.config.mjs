@@ -15,6 +15,10 @@ export default defineConfig({
     // 引用符などの自動変換（smartypants）は Sätteri と同じく使わない
     processor: unified({ remarkPlugins: [remarkCjkFriendly], smartypants: false }),
   },
+  vite: {
+    // 小さいフォントを CSS に埋め込まず、必ずファイルとして出す（scripts/subset-fonts.mjs がビルド後に削るため）
+    build: { assetsInlineLimit: (file) => (/\.woff2?$/.test(file) ? false : undefined) },
+  },
   integrations: [
     sitemap({
       // 英語版の記事（/en/trivia/<動画ID>/）と日本語の記事（/trivia/<動画ID>/）を hreflang でつなぐ
