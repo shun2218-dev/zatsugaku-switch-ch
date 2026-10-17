@@ -1,0 +1,149 @@
+---
+// トップページ（/ と /en/）。ルートは pages/index.astro と pages/en/index.astro
+import Base from '../../layouts/Base.astro';
+import VideoCard from '../VideoCard.astro';
+import SubscribeCTA from '../SubscribeCTA.astro';
+import SearchForm from '../SearchForm.astro';
+import CategoryIcon from '../CategoryIcon.astro';
+import ChannelStats from '../ChannelStats.astro';
+import PendingCard from '../PendingCard.astro';
+import { SITE, SITE_EN } from '../../lib/site';
+import { videos, categories, popular, latest, pending, noteOf, thumb, topTags, searchUrl } from '../../lib/data';
+import { UI, type Lang, alternatesOf, articleUrl, categoryName, enArticleOf, inLang, localePath, titleOf } from '../../lib/i18n';
+interface Props { lang?: Lang }
+const { lang = 'ja' } = Astro.props;
+const t = UI[lang];
+const p = (path: string) => localePath(lang, path);
+const list = inLang(videos, lang);
+
+// 新着: 記事がまだない動画（YouTube へのリンク）を先に、続けて記事を新しい順に。合わせて8本
+// 英語のページでは、まだ記事のない動画（タイトルが日本語のまま）は出さない
+const NEW_COUNT = 8;
+const newPending = lang === 'ja' ? pending.slice(0, NEW_COUNT) : [];
+const newLatest = inLang(latest, lang).slice(0, NEW_COUNT - newPending.length);
+
+// 今日のなぜ？: 「ひとことで言うと」がある記事から、日本時間の日付で1本選ぶ（3時間ごとのビルドで日が変わると入れ替わる）
+const answerOf = (id: string) => (lang === 'en' ? noteOf(id) && enArticleOf(id)?.answer : noteOf(id)?.frontmatter.answer);
+const quizPool = videos.filter((v) => answerOf(v.id));
+const day = Math.floor((Date.now() + 9 * 3600_000) / 86400_000);
+const quiz = quizPool[day % quizPool.length];
+const quizAnswer = quiz && answerOf(quiz.id);
+
+const text = {
+  ja: {
+    kicker: 'YouTube 雑学チャンネル',
+    lead: '「なぜハチミツは腐らないの？」「なぜ雷は音が遅れて聞こえるの？」――毎日の「なぜ？」を、短い動画と解説記事で解き明かします。',
+    quiz: '今日のなぜ？',
+    reveal: '答えを見る',
+    readMore: '記事で詳しく読む →',
+    popular: 'よく見られている雑学',
+    categories: 'カテゴリから探す',
+    latest: '新着の雑学',
+    all: (n: number) => `すべての雑学を見る（${n}本） →`,
+  },
+  en: {
+    kicker: 'A Japanese YouTube trivia channel',
+    lead: 'Why doesn’t honey spoil? Why does thunder come after the lightning? Short videos and articles answer the everyday “why?” questions. The videos are in Japanese; the articles are translated into English by AI.',
+    quiz: 'Today’s “why?”',
+    reveal: 'Show the answer',
+    readMore: 'Read the article →',
+    popular: 'Most watched',
+    categories: 'Browse by category',
+    latest: 'Latest trivia',
+    all: (n: number) => `See all trivia (${n}) →`,
+  },
+}[lang];
+
+const site = lang === 'en' ? SITE_EN : SITE;
+const jsonLd = [
+  { '@context': 'https://schema.org', '@type': 'WebSite', name: site.name, alternateName: lang === 'en' ? [SITE.name, SITE.alternateName] : SITE.alternateName, url: new URL(p('/'), Astro.site).href, inLanguage: lang },
+  ...(lang === 'ja' ? [{ '@context': 'https://schema.org', '@type': 'Organization', name: SITE.name, alternateName: SITE.alternateName, url: Astro.site?.href, logo: new URL('/apple-touch-icon.png', Astro.site).href, sameAs: [SITE.channelUrl] }] : []),
+];
+---
+<Base lang={lang} jsonLd={jsonLd} alternates={alternatesOf('/')}>
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="hero-inner">
+      <div class="hero-main">
+        <p class="hero-kicker"><span class="switch-mark" aria-hidden="true"></span>{text.kicker}</p>
+        {lang === 'en'
+          ? <h1 id="hero-title">30 seconds to <br />switch on your <em>curiosity.</em></h1>
+          : <h1 id="hero-title">30秒で、<br />好奇心に<em>スイッチ。</em></h1>}
+        <p class="hero-lead">{text.lead}</p>
+        <SearchForm id="hero-q" showLabel lang={lang} />
+        {/* タグは日本語しかないので、英語のページには出さない */}
+        {lang === 'ja' && (
+          <ul class="hero-tags" aria-label="よく出てくるテーマ">
+            <li class="hero-tags-label" aria-hidden="true">よく出てくるテーマ：</li>
+            {topTags(4).map((tag) => <li><a href={searchUrl(tag)}>#{tag}</a></li>)}
+          </ul>
+        )}
+      </div>
+
+      {quiz && (
+        <article class="quiz" aria-labelledby="quiz-title">
+          <img class="quiz-img" src={thumb(quiz)} alt="" width="720" height="1260" />
+          <div class="quiz-body">
+            <p class="quiz-label">{text.quiz}</p>
+            <h2 id="quiz-title"><a href={articleUrl(quiz.id, lang)}>{titleOf(quiz, lang)}</a></h2>
+            {/* スクリプトが動くときだけスイッチを出し、答えを隠す（動かないときは答えがそのまま読める） */}
+            <button type="button" class="quiz-switch" aria-expanded="false" aria-controls="quiz-answer" hidden data-quiz-switch data-ga-event="quiz_switch">
+              <span class="quiz-track" aria-hidden="true"></span>{text.reveal}
+            </button>
+            <div id="quiz-answer" class="quiz-answer" data-quiz-answer>
+              <p>{quizAnswer}</p>
+              <a href={articleUrl(quiz.id, lang)}>{text.readMore}</a>
+            </div>
+          </div>
+        </article>
+      )}
+    </div>
+  </section>
+
+  <ChannelStats tone="card" lang={lang} />
+
+  <section class="section" aria-labelledby="popular-title">
+    <h2 id="popular-title" class="section-title">{text.popular}</h2>
+    <div class="grid">{inLang(popular, lang).slice(0, 8).map((v) => <VideoCard video={v} lang={lang} />)}</div>
+  </section>
+
+  <section class="section" aria-labelledby="cat-title">
+    <h2 id="cat-title" class="section-title">{text.categories}</h2>
+    <ul class="cat-grid">
+      {categories.map((c) => (
+        <li>
+          <a class="cat-tile" href={p(`/category/${c.slug}/`)}>
+            <span class="cat-badge"><CategoryIcon slug={c.slug} /></span>
+            <span class="cat-text"><span class="cat-name">{categoryName(c.slug, lang)}</span><span class="cat-count">{t.count(inLang(c.videos, lang).length)}</span></span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section class="section" aria-labelledby="new-title">
+    <div class="section-head">
+      <h2 id="new-title" class="section-title">{text.latest}</h2>
+      <p class="more"><a href={p('/trivia/')}>{text.all(list.length)}</a></p>
+    </div>
+    <div class="grid">
+      {newPending.map((v) => <PendingCard video={v} />)}
+      {newLatest.map((v) => <VideoCard video={v} lang={lang} />)}
+    </div>
+  </section>
+
+  <SubscribeCTA lang={lang} />
+</Base>
+
+<script>
+  const button = document.querySelector<HTMLButtonElement>('[data-quiz-switch]');
+  const answer = document.querySelector<HTMLElement>('[data-quiz-answer]');
+  if (button && answer) {
+    button.hidden = false;
+    answer.hidden = true;
+    button.addEventListener('click', () => {
+      const open = button.getAttribute('aria-expanded') !== 'true';
+      button.setAttribute('aria-expanded', String(open));
+      answer.hidden = !open;
+    });
+  }
+</script>

@@ -2,14 +2,15 @@
 // カテゴリページへのリンクを並べる（一覧・カテゴリページの上）。横スクロールにせず折り返す
 import CategoryIcon from './CategoryIcon.astro';
 import { categories } from '../lib/data';
-interface Props { current?: string }
-const { current } = Astro.props;
+import { type Lang, categoryName, localePath } from '../lib/i18n';
+interface Props { current?: string; lang?: Lang }
+const { current, lang = 'ja' } = Astro.props;
 ---
 <nav class="cat-links" aria-labelledby="cat-links-label">
-  <span id="cat-links-label" class="filter-label">カテゴリ</span>
+  <span id="cat-links-label" class="filter-label">{lang === 'en' ? 'Categories' : 'カテゴリ'}</span>
   {categories.map((c) => (
-    <a class="cat-chip" href={`/category/${c.slug}/`} aria-current={c.slug === current ? 'page' : undefined}>
-      <CategoryIcon slug={c.slug} />{c.name}
+    <a class="cat-chip" href={localePath(lang, `/category/${c.slug}/`)} aria-current={c.slug === current ? 'page' : undefined}>
+      <CategoryIcon slug={c.slug} />{categoryName(c.slug, lang)}
     </a>
   ))}
 </nav>

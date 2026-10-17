@@ -1,22 +1,38 @@
 ---
 import Base from '../layouts/Base.astro';
+// GitHub Pages は 404 ページを1つしか持てないので、/en/ の下では英語の文言に差し替える（スクリプトが動かないときは日本語のまま）
+const en = {
+  title: 'Page not found',
+  body: 'The page you are looking for may have been moved or deleted.',
+  video: 'The article for this newly published trivia is not ready yet. You can <a data-video-link href="#" target="_blank" rel="noopener">watch the video on YouTube</a> (in Japanese).',
+  home: 'Go to the home page',
+};
 ---
 <Base title="ページが見つかりません">
-  <div class="notfound">
-    <h1 class="page-title">ページが見つかりません</h1>
-    <p>お探しのページは移動または削除された可能性があります。</p>
-    <p class="notfound-video" data-video hidden>
+  <div class="notfound" data-en={JSON.stringify(en)}>
+    <h1 class="page-title" data-t="title">ページが見つかりません</h1>
+    <p data-t="body">お探しのページは移動または削除された可能性があります。</p>
+    <p class="notfound-video" data-video data-t="video" hidden>
       公開されたばかりの雑学の記事は、準備ができしだい掲載します。動画は <a data-video-link href="#" target="_blank" rel="noopener">YouTubeで見られます</a>。
     </p>
-    <p><a class="btn btn-sub" href="/">トップページへ</a></p>
+    <p><a class="btn btn-sub" href="/" data-t="home" data-home>トップページへ</a></p>
   </div>
 </Base>
 
 <script>
+  const root = document.querySelector<HTMLElement>('.notfound')!;
+  const isEn = location.pathname.startsWith('/en/');
+  if (isEn) {
+    const en = JSON.parse(root.dataset.en!) as Record<string, string>;
+    document.documentElement.lang = 'en';
+    document.title = `${en.title} | Zatsugaku Switch`;
+    for (const el of root.querySelectorAll<HTMLElement>('[data-t]')) el.innerHTML = en[el.dataset.t!];
+    root.querySelector<HTMLAnchorElement>('[data-home]')!.href = '/en/';
+  }
   // 動画の概要欄からのリンク（/trivia/<動画ID>/）で、まだページができていないときは YouTube へ案内する
-  const m = location.pathname.match(/^\/trivia\/([\w-]{11})\/?$/);
-  const box = document.querySelector<HTMLElement>('[data-video]');
-  const link = document.querySelector<HTMLAnchorElement>('[data-video-link]');
+  const m = location.pathname.match(/^(?:\/en)?\/trivia\/([\w-]{11})\/?$/);
+  const box = root.querySelector<HTMLElement>('[data-video]');
+  const link = root.querySelector<HTMLAnchorElement>('[data-video-link]');
   if (m && box && link) {
     link.href = `https://www.youtube.com/watch?v=${m[1]}`;
     box.hidden = false;

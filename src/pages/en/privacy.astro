@@ -1,0 +1,54 @@
+---
+import Base from '../../layouts/Base.astro';
+import { SITE, GA_ID } from '../../lib/site';
+import { youtube } from '../../lib/youtube';
+import { alternatesOf } from '../../lib/i18n';
+
+// 日本語版（/privacy/）の英訳。中身を変えるときは日本語版と一緒に直す
+// アクセス解析・YouTube API Services を使っていないビルドでは、その項目を出さずに番号を詰める
+let n = 0;
+const num = () => ++n;
+---
+<Base lang="en" title="Privacy policy" description="The privacy policy of the official Zatsugaku Switch website." alternates={alternatesOf('/privacy/')}>
+  <article class="article prose narrow">
+    <h1 class="page-title">Privacy policy</h1>
+    <p class="meta">Last updated: October 12, 2026</p>
+    <p class="translation-note">This is an English translation of the <a href="/privacy/" lang="ja" hreflang="ja">Japanese privacy policy</a>, provided for convenience. If the two differ, the Japanese version prevails.</p>
+
+    <h2>{num()}. Information we collect</h2>
+    <p>This site has no features that ask visitors to enter personal information such as names or email addresses. {GA_ID ? 'This site uses Google Analytics cookies for access analytics (see “Access analytics” below).' : 'This site itself does not use cookies.'} Inquiries are accepted through the Google Form described in the next section.</p>
+
+    <h2>{num()}. Contact form</h2>
+    <p>We use Google Forms for inquiries. Entering a name (or nickname) and email address is optional and only needed if you would like a reply. We use what you send only to reply to you and to correct or improve our videos and articles, and we do not provide it to third parties except as required by law. Information entered in the form is stored on Google’s servers. For details, see the <a href="https://policies.google.com/privacy?hl=en" target="_blank" rel="noopener">Google Privacy Policy</a>.</p>
+
+    <h2>{num()}. Hosting</h2>
+    <p>This site is served by GitHub Pages. In the course of delivery, GitHub may record information such as the IP address of the visitor. For details, see the <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener">GitHub General Privacy Statement</a>.</p>
+
+    <h2>{num()}. Embedded YouTube videos</h2>
+    <p>Videos in the articles are embedded using YouTube’s privacy-enhanced mode. When you open an article page, the YouTube player is loaded and Google’s handling of information applies. For details, see the <a href="https://policies.google.com/privacy?hl=en" target="_blank" rel="noopener">Google Privacy Policy</a>.</p>
+
+    {youtube && (
+      <>
+        <h2>{num()}. Use of YouTube API Services</h2>
+        <p>This site uses YouTube API Services to show numbers such as the channel’s subscriber count and view counts, and the latest videos. We only retrieve public information about the channel and its videos, and we do not collect or send any visitor information through YouTube API Services. Thumbnail images of the latest videos on the Japanese home page are loaded from YouTube’s servers. Use of YouTube is subject to the <a href="https://www.youtube.com/t/terms" target="_blank" rel="noopener">YouTube Terms of Service</a>, and the handling of information is subject to the <a href="https://policies.google.com/privacy?hl=en" target="_blank" rel="noopener">Google Privacy Policy</a>.</p>
+      </>
+    )}
+
+    {GA_ID && (
+      <>
+        <h2>{num()}. Access analytics</h2>
+        <p>To understand which articles are read and to improve the site, we use Google Analytics, an analytics tool provided by Google LLC. Google Analytics uses cookies to send information to Google, such as the pages you view, how you arrived at a page (search, referring site, etc.), clicks within the site, your approximate region, and the type of device and browser. This information does not include anything that identifies you personally, such as your name.</p>
+        <p>The information sent is collected and processed by Google. For details, see <a href="https://policies.google.com/technologies/partner-sites?hl=en" target="_blank" rel="noopener">How Google uses information from sites or apps that use our services</a>. If you do not want your information collected, you can disable cookies in your browser or use the <a href="https://tools.google.com/dlpage/gaoptout?hl=en" target="_blank" rel="noopener">Google Analytics Opt-out Browser Add-on</a>.</p>
+      </>
+    )}
+
+    <h2>{num()}. Sharing to external services</h2>
+    <p>When you press a share button for X or LINE, you are taken to that service’s page. The handling of information there is subject to each service’s terms.</p>
+
+    <h2>{num()}. Changes to this policy</h2>
+    <p>If the handling of information changes, for example because we start using a new service, we will update this page.</p>
+
+    <h2>{num()}. Contact</h2>
+    <p><a href={SITE.contactUrl} target="_blank" rel="noopener">Contact form</a> <span class="lang-note">(in Japanese)</span></p>
+  </article>
+</Base>

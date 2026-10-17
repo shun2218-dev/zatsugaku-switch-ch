@@ -1,0 +1,40 @@
+---
+import Base from '../../layouts/Base.astro';
+import { SITE } from '../../lib/site';
+import { youtube } from '../../lib/youtube';
+import { alternatesOf } from '../../lib/i18n';
+
+// 日本語版（/terms/）の英訳。中身を変えるときは日本語版と一緒に直す
+// YouTube API Services を使っていないビルドでは、その項目を出さずに番号を詰める
+let n = 0;
+const num = () => ++n;
+---
+<Base lang="en" title="Terms of use" description="The terms of use of the official Zatsugaku Switch website." alternates={alternatesOf('/terms/')}>
+  <article class="article prose narrow">
+    <h1 class="page-title">Terms of use</h1>
+    <p class="meta">Last updated: October 17, 2026</p>
+    <p class="translation-note">This is an English translation of the <a href="/terms/" lang="ja" hreflang="ja">Japanese terms of use</a>, provided for convenience. If the two differ, the Japanese version prevails.</p>
+
+    <h2>{num()}. Copyright</h2>
+    <p>The copyright of the text, images and videos on this site belongs to the site owner. You are free to link to articles and share them on social media. If you reproduce text or images, please credit this site with a link as the source.</p>
+
+    <h2>{num()}. About the content</h2>
+    <p>The content of this site is created with the help of AI and published after being checked by the site owner. The English pages are translated from Japanese with AI and are published without a human check unless stated otherwise. We take care to be accurate, but we do not guarantee that the content is complete or correct. For decisions about health or safety, please check information from public institutions or experts.</p>
+
+    <h2>{num()}. Disclaimer</h2>
+    <p>The site owner is not responsible for any damage arising from the use of this site. The same applies to the content of external sites linked from this site.</p>
+
+    {youtube && (
+      <>
+        <h2>{num()}. YouTube content</h2>
+        <p>This site uses YouTube API Services to show channel numbers and the latest videos. By viewing YouTube videos or information on this site, you are deemed to agree to the <a href="https://www.youtube.com/t/terms" target="_blank" rel="noopener">YouTube Terms of Service</a>.</p>
+      </>
+    )}
+
+    <h2>{num()}. Changes to these terms</h2>
+    <p>These terms may be changed without notice. The revised terms take effect when they are posted on this page.</p>
+
+    <h2>{num()}. Contact</h2>
+    <p><a href={SITE.contactUrl} target="_blank" rel="noopener">Contact form</a> <span class="lang-note">(in Japanese)</span></p>
+  </article>
+</Base>

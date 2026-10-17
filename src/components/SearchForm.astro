@@ -1,13 +1,18 @@
 ---
 // showLabel: 入力欄の上に「雑学を検索」を見せる（ほかは読み上げ用にだけ置く）
-interface Props { id?: string; class?: string; autofocus?: boolean; showLabel?: boolean }
-const { id = 'q', class: className, autofocus = false, showLabel = false } = Astro.props;
+import { type Lang, localePath } from '../lib/i18n';
+interface Props { id?: string; class?: string; autofocus?: boolean; showLabel?: boolean; lang?: Lang }
+const { id = 'q', class: className, autofocus = false, showLabel = false, lang = 'ja' } = Astro.props;
+const text = {
+  ja: { label: '雑学を検索', placeholder: '気になる「なぜ？」を検索（例: 雷、ハチミツ）', submit: '検索' },
+  en: { label: 'Search trivia', placeholder: 'Search a "why?" (e.g. thunder, honey)', submit: 'Search' },
+}[lang];
 ---
-{showLabel && <label class="search-label" for={id}>雑学を検索</label>}
-<form class:list={['search-form', className]} action="/search/" method="get" role="search">
-  {!showLabel && <label class="visually-hidden" for={id}>雑学を検索</label>}
-  <input id={id} name="q" type="search" placeholder="気になる「なぜ？」を検索（例: 雷、ハチミツ）" autocomplete="off" enterkeyhint="search" autofocus={autofocus} />
-  <button type="submit" aria-label="検索">
+{showLabel && <label class="search-label" for={id}>{text.label}</label>}
+<form class:list={['search-form', className]} action={localePath(lang, '/search/')} method="get" role="search">
+  {!showLabel && <label class="visually-hidden" for={id}>{text.label}</label>}
+  <input id={id} name="q" type="search" placeholder={text.placeholder} autocomplete="off" enterkeyhint="search" autofocus={autofocus} />
+  <button type="submit" aria-label={text.submit}>
     <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2.4" /><path d="m16.5 16.5 4.5 4.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" /></svg>
   </button>
 </form>
