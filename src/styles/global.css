@@ -41,7 +41,7 @@ h1, h2, h3 { line-height: 1.4; word-break: auto-phrase; }
 .site-header :focus-visible, .site-footer :focus-visible, .hero :focus-visible, .cta :focus-visible { outline-color: var(--amber); }
 .skip-link { position: absolute; left: 16px; top: -64px; z-index: 30; padding: 10px 16px; border-radius: 8px; background: var(--amber); color: var(--navy); font-weight: 700; text-decoration: none; }
 .skip-link:focus { top: 12px; }
-@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; scroll-behavior: auto !important; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
 
 /* ---- ボタン（高さ 44px 以上） ---- */
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: .5em; min-height: 48px; padding: 0 1.4em; border-radius: 999px; font: inherit; font-size: .95rem; font-weight: 700; line-height: 1.3; text-decoration: none; border: 2px solid transparent; cursor: pointer; transition: background .15s, color .15s; }
@@ -177,7 +177,15 @@ main { padding-block: 24px 0; }
 /* ---- 見出し・セクション ---- */
 .section { margin-top: 72px; }
 .section-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 24px; margin-bottom: 24px; }
-.section-title { margin: 0 0 24px; font-family: var(--font-display); font-size: clamp(1.45rem, 3.5vw, 1.9rem); color: var(--navy); }
+.section-title { position: relative; margin: 0 0 24px; padding-left: 48px; font-family: var(--font-display); font-size: clamp(1.45rem, 3.5vw, 1.9rem); color: var(--navy); }
+/* 見出しの左のスイッチ印。画面に入ると「カチッ」と ON になる（motion.ts が is-off を外す。スクリプトが動かなければ最初から ON） */
+.section-title::before, .section-title::after { content: ''; position: absolute; top: calc(.7em - 9px); border-radius: 999px; }
+/* OFF にするときは一瞬で、ON にするときだけ動かす（is-armed は OFF にしたあとで motion.ts がつける） */
+.section-title.is-armed::before, .section-title.is-armed::after { transition: background .25s, left .25s cubic-bezier(.5, 1.6, .5, 1); }
+.section-title::before { left: 0; width: 36px; height: 20px; background: var(--amber); }
+.section-title::after { left: 19px; top: calc(.7em - 6px); width: 14px; height: 14px; background: var(--navy); }
+.section-title.is-off::before { background: #c4cad6; }
+.section-title.is-off::after { left: 3px; }
 .section-head .section-title { margin: 0; }
 .more { margin: 0; font-weight: 700; }
 .more a { text-decoration: none; }
@@ -194,9 +202,14 @@ main { padding-block: 24px 0; }
 .card { display: flex; flex-direction: column; gap: 12px; color: inherit; text-decoration: none; }
 .card[hidden] { display: none; }
 .card:hover { color: inherit; }
-.card-img { position: relative; aspect-ratio: 4 / 5; overflow: hidden; border-radius: var(--radius); background: var(--line); }
-.card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .2s; }
-.card:hover .card-img img { transform: scale(1.03); }
+.card-img { position: relative; aspect-ratio: 4 / 5; overflow: hidden; border-radius: var(--radius); background: var(--line); transition: transform .25s cubic-bezier(.2, .8, .2, 1), box-shadow .25s; }
+.card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .3s; }
+/* 触れると画像が少し浮き上がり、紺の影が落ちる */
+.card:hover .card-img, .card:focus-visible .card-img { transform: translateY(-6px); box-shadow: 0 14px 28px -10px rgb(27 42 74 / .4); }
+.card:hover .card-img img { transform: scale(1.04); }
+/* スクロールで画面に入ったカードが、少し下からふわっと出る（motion.ts が画面の外のカードにだけ is-hidden をつける） */
+.card.is-hidden { opacity: 0; transform: translateY(24px); }
+.card.is-shown { transition: opacity .5s ease-out, transform .5s cubic-bezier(.2, .8, .2, 1); transition-delay: var(--reveal-delay, 0s); }
 .card:hover h3 { text-decoration: underline; text-underline-offset: 4px; }
 .badge { position: absolute; left: 10px; top: 10px; padding: .2em .7em; border-radius: 8px; background: var(--navy); color: var(--amber); font-size: .75rem; font-weight: 700; }
 .card-body { display: flex; flex-direction: column; gap: 8px; padding: 0 2px; }
@@ -384,3 +397,32 @@ html[lang='en'] .prose { font-size: 1.12rem; line-height: 1.75; }
 .footer-nav a { display: inline-flex; align-items: center; min-height: 36px; color: var(--on-dark); font-weight: 400; text-decoration: none; }
 .footer-nav a:hover { color: #fff; text-decoration: underline; text-underline-offset: 6px; }
 .footer-note { margin: 32px 0 0; padding-top: 20px; border-top: 1px solid rgb(255 255 255 / .12); color: var(--on-dark-muted); font-size: .82rem; }
+
+/* ---- トップのイントロ（Intro.astro）。ロゴの電球のスイッチが入り、光が画面を満たす ---- */
+.intro { display: none; }
+html[data-intro='play'] { overflow: hidden; }
+html[data-intro='play'] .intro { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; background: var(--navy); cursor: pointer; }
+.intro.is-leaving { transition: opacity .45s ease-out; opacity: 0; }
+.intro.is-skipped { transition: opacity .2s; opacity: 0; }
+.intro-center { position: relative; display: flex; flex-direction: column; align-items: center; gap: 18px; animation: intro-out .2s 2.1s forwards; }
+.intro-bulb { width: clamp(130px, 24vmin, 180px); height: auto; overflow: visible; }
+.intro-rays { stroke: var(--amber); stroke-width: 4.5; stroke-linecap: round; opacity: 0; transform-origin: 60px 52px; animation: intro-rays .35s 1.2s cubic-bezier(.3, 1.6, .5, 1) forwards; }
+.intro-glass { fill: #2f3f63; animation: intro-glass .75s .62s forwards; }
+.intro-shine { fill: none; stroke: #415278; stroke-width: 6; stroke-linecap: round; animation: intro-shine .75s .62s forwards; }
+.intro-filament { fill: none; stroke: #4c5d84; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; animation: intro-filament .75s .62s forwards; }
+.intro-base { fill: #4a6f8f; }
+.intro-track { fill: var(--night); }
+.intro-nub { fill: #3b5a78; }
+.intro-knob { fill: #8b97b0; animation: intro-knob .3s .3s cubic-bezier(.5, 1.5, .5, 1) forwards; }
+.intro-word { margin: 0; color: var(--amber); font-family: var(--font-display); font-weight: 900; font-size: clamp(1.4rem, 4.5vmin, 2.2rem); letter-spacing: .1em; opacity: 0; animation: intro-in .4s 1.15s forwards; }
+.intro-flood { position: absolute; left: 50%; top: 50%; width: 150vmax; height: 150vmax; margin: -75vmax; border-radius: 50%; background: var(--amber); transform: scale(0); animation: intro-flood .6s 1.7s cubic-bezier(.7, 0, .3, 1) forwards; }
+@keyframes intro-knob { to { transform: translateX(22px); fill: var(--amber); } }
+/* 電球が「点く・消える」を2回くり返してから点きっぱなしになる */
+@keyframes intro-glass { 0% { fill: #2f3f63; } 14% { fill: var(--amber); } 27% { fill: #34466c; } 41% { fill: var(--amber); } 52% { fill: #3d5078; } 100% { fill: var(--amber); } }
+@keyframes intro-shine { 0% { stroke: #415278; } 14% { stroke: #fff1c9; } 27% { stroke: #415278; } 41% { stroke: #fff1c9; } 52% { stroke: #415278; } 100% { stroke: #fff1c9; } }
+@keyframes intro-filament { 0% { stroke: #4c5d84; } 14% { stroke: #fff6dc; } 27% { stroke: #4c5d84; } 41% { stroke: #fff6dc; } 52% { stroke: #4c5d84; } 100% { stroke: #fff6dc; } }
+@keyframes intro-rays { from { opacity: 0; transform: scale(.75); } to { opacity: 1; transform: none; } }
+@keyframes intro-in { to { opacity: 1; } }
+@keyframes intro-out { to { opacity: 0; } }
+/* 光の円は画面の対角線（最大で長い辺の約1.42倍）より大きい */
+@keyframes intro-flood { to { transform: scale(1); } }
