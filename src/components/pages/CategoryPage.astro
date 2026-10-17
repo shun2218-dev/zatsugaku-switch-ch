@@ -2,6 +2,7 @@
 // カテゴリの雑学（/category/<slug>/ と /en/category/<slug>/）
 import Base from '../../layouts/Base.astro';
 import VideoCard from '../VideoCard.astro';
+import { EAGER_CARDS } from '../../lib/images';
 import SubscribeCTA from '../SubscribeCTA.astro';
 import Breadcrumb from '../Breadcrumb.astro';
 import CategoryIcon from '../CategoryIcon.astro';
@@ -23,6 +24,6 @@ const description = lang === 'en'
   <h1 class="page-title page-title-icon"><span class="cat-badge"><CategoryIcon slug={cat.slug} /></span>{title}<span>{UI[lang].count(list.length)}</span></h1>
   <CategoryLinks current={cat.slug} lang={lang} />
   <NoteFilter videos={list} lang={lang} />
-  <div class="grid" data-note-grid>{list.map((v) => <VideoCard video={v} showCategory={false} lang={lang} />)}</div>
+  <div class="grid" data-note-grid>{list.map((v, i) => <VideoCard video={v} showCategory={false} lang={lang} eager={i < EAGER_CARDS} />)}</div>
   <SubscribeCTA lang={lang} />
 </Base>

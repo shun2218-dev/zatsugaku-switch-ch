@@ -1,5 +1,6 @@
 ---
 // 検索エンジンが動画を見つけられるよう、最初から YouTube（プライバシー強化モード）を埋め込む
+// （押すまで読み込まない形にはしない。loading="lazy" は画面から遠いときに後回しにするだけで、押さなくても読み込まれる）
 import type { Video } from '../lib/data';
 import { UI, type Lang } from '../lib/i18n';
 interface Props { video: Pick<Video, 'id' | 'title' | 'format'>; lang?: Lang }
@@ -12,6 +13,7 @@ const vertical = video.format === 'short';
     title={UI[lang].videoTitle(video.title)}
     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
     referrerpolicy="strict-origin-when-cross-origin"
+    loading="lazy"
     allowfullscreen
   ></iframe>
 </div>

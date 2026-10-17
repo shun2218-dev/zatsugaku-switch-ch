@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import VideoCard from './VideoCard.astro';
+import { smallImage } from '../lib/images';
 import YouTubeEmbed from './YouTubeEmbed.astro';
 import Share from './Share.astro';
 import Breadcrumb from './Breadcrumb.astro';
@@ -118,7 +119,7 @@ const jsonLd = [
           <ol class="scenes">
             {video.scenes.map((s) => (
               <li>
-                {s.image && <img src={s.image} alt={s.alt} loading="lazy" decoding="async" width="720" height={video.format === 'short' ? 1260 : 411} class:list={{ wide: video.format === 'longform' }} />}
+                {s.image && <img src={smallImage(s.image)} alt={s.alt} loading="lazy" decoding="async" width="720" height={video.format === 'short' ? 1260 : 411} class:list={{ wide: video.format === 'longform' }} />}
                 <p>{s.text}</p>
               </li>
             ))}

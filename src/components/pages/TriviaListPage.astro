@@ -2,6 +2,7 @@
 // 雑学一覧（/trivia/ と /en/trivia/）
 import Base from '../../layouts/Base.astro';
 import VideoCard from '../VideoCard.astro';
+import { EAGER_CARDS } from '../../lib/images';
 import SearchForm from '../SearchForm.astro';
 import NoteFilter from '../NoteFilter.astro';
 import CategoryLinks from '../CategoryLinks.astro';
@@ -20,5 +21,5 @@ const description = lang === 'en'
   <SearchForm id="list-q" class="search-page" lang={lang} />
   <CategoryLinks lang={lang} />
   <NoteFilter videos={list} lang={lang} />
-  <div class="grid" data-note-grid>{list.map((v) => <VideoCard video={v} lang={lang} />)}</div>
+  <div class="grid" data-note-grid>{list.map((v, i) => <VideoCard video={v} lang={lang} eager={i < EAGER_CARDS} />)}</div>
 </Base>

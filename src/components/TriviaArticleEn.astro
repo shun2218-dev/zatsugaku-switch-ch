@@ -6,6 +6,7 @@ import Breadcrumb from './Breadcrumb.astro';
 import CategoryIcon from './CategoryIcon.astro';
 import SubscribeCTA from './SubscribeCTA.astro';
 import VideoCard from './VideoCard.astro';
+import { smallImage } from '../lib/images';
 import { SITE, reportUrl } from '../lib/site';
 import { related, thumb, watchUrl } from '../lib/data';
 import { type EnArticle, CATEGORY_NAME_EN, enArticleOf, enUrl, jaUrl } from '../lib/i18n';
@@ -127,7 +128,7 @@ const jsonLd = [
           <ol class="scenes">
             {article.scenes.map((s, i) => (
               <li>
-                {images[i] && <img src={images[i]} alt={s.alt} loading="lazy" decoding="async" width="720" height={video.format === 'short' ? 1260 : 411} class:list={{ wide: video.format === 'longform' }} />}
+                {images[i] && <img src={smallImage(images[i])} alt={s.alt} loading="lazy" decoding="async" width="720" height={video.format === 'short' ? 1260 : 411} class:list={{ wide: video.format === 'longform' }} />}
                 <p>{s.text}</p>
               </li>
             ))}

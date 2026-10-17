@@ -2,15 +2,17 @@
 import { type Video, thumb, hasNote } from '../lib/data';
 import { noteIconSvg } from '../lib/icons';
 import { UI, type Lang, articleUrl, categoryName, titleOf } from '../lib/i18n';
+import { imageSrcset, CARD_SIZES } from '../lib/images';
 import CategoryIcon from './CategoryIcon.astro';
-interface Props { video: Video; showCategory?: boolean; lang?: Lang }
-const { video, showCategory = true, lang = 'ja' } = Astro.props;
+// eager: 一覧の先頭で最初の画面に映るカード。画像を後回しにせず優先して読む
+interface Props { video: Video; showCategory?: boolean; lang?: Lang; eager?: boolean }
+const { video, showCategory = true, lang = 'ja', eager = false } = Astro.props;
 const t = UI[lang];
 const note = hasNote(video.id);
 ---
 <a class="card" href={articleUrl(video.id, lang)} data-note={note ? '1' : '0'}>
   <div class="card-img">
-    <img src={thumb(video)} alt="" loading="lazy" decoding="async" width="720" height="1260" />
+    <img src={thumb(video)} srcset={imageSrcset(thumb(video))} sizes={CARD_SIZES} alt="" loading={eager ? 'eager' : 'lazy'} fetchpriority={eager ? 'high' : undefined} decoding="async" width="720" height="1260" />
     {video.format === 'longform' && <span class="badge">{t.longform}</span>}
   </div>
   <div class="card-body">

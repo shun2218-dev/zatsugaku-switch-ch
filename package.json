@@ -3,11 +3,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "export": "node scripts/export.mjs",
+    "export": "node scripts/export.mjs && node scripts/thumbs.mjs",
     "sync": "node scripts/sync.mjs",
     "translate": "node scripts/translate.mjs",
-    "dev": "astro dev",
-    "build": "astro build && node scripts/check-dist.mjs",
+    "dev": "node scripts/thumbs.mjs && astro dev",
+    "build": "node scripts/thumbs.mjs && astro build && node scripts/subset-fonts.mjs && node scripts/check-dist.mjs",
     "preview": "astro preview"
   },
   "dependencies": {
@@ -22,6 +22,7 @@
     "@anthropic-ai/sdk": "^0.135.0",
     "pg": "^8.23.1",
     "sharp": "^0.35.5",
+    "subset-font": "^2.9.0",
     "yaml": "^2.9.1"
   },
   "packageManager": "pnpm@12.6.0"
