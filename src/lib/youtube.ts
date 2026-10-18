@@ -1,6 +1,7 @@
 // ビルド時に YouTube Data API v3 からチャンネルの公開情報（登録者数・再生数など）を取る。
 // APIキーは YOUTUBE_API_KEY（CI では Secrets、ローカルでは .env）。未設定や取得失敗のときは null を返し、
 // チャンネルの数字と新着のつなぎ表示を出さないだけでビルドは止めない
+import { getImage } from 'astro:assets';
 import { SITE } from './site';
 
 const KEY = import.meta.env.YOUTUBE_API_KEY ?? '';
@@ -108,5 +109,27 @@ export async function cardThumbnail(v: YouTubeVideo) {
     return res.ok ? url : v.thumbnail;
   } catch {
     return v.thumbnail;
+  }
+}
+
+/** 一覧のカードに出す画像。シーン画像と同じく幅360と720の webp にして自前で配る */
+export type CardImage = { src: string; srcset?: string; width?: number; height?: number };
+
+// YouTube のサムネイルは 1080x1920・100KB 前後あり、カード（幅360まで）には大きすぎる。
+// ビルド時に webp へ変換して 1枚 10KB ほどにし、i.ytimg.com への読み込みもなくす。
+// 取れなかったときは YouTube の画像をそのまま出す（ビルドは止めない）
+export async function cardImage(url: string): Promise<CardImage> {
+  try {
+    // inferSize は元の幅と高さを両方入れてくるので、幅だけ指定すると縦に伸びてしまう。
+    // 先に元の大きさを調べて、縦横比を保った高さを自分で渡す
+    const source = await getImage({ src: url, inferSize: true });
+    const ratio = Number(source.options.height) / Number(source.options.width);
+    const sized = (width: number) =>
+      getImage({ src: url, inferSize: true, width, height: Math.round(width * ratio), format: 'webp', quality: 72 });
+    const [small, large] = await Promise.all([sized(360), sized(720)]);
+    return { src: large.src, srcset: `${small.src} 360w, ${large.src} 720w`, width: 720, height: Math.round(720 * ratio) };
+  } catch (e) {
+    console.warn(`[youtube] サムネイルを変換できなかったので YouTube の画像をそのまま使います（${url}）: ${e}`);
+    return { src: url };
   }
 }
