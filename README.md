@@ -20,9 +20,10 @@ dist/ → GitHub Pages
 見た目は Claude Design のキャンバス「雑学スイッチ サイトリデザイン」をもとにしている。色・文字・余白は `src/styles/global.css` の先頭の変数にまとめた。
 
 - 色はロゴの紺（`#1B2A4A`）と黄色（`#FFC23C`）。文字と背景のコントラスト比はすべて 4.5:1 以上
-- 書体は見出しが Zen Maru Gothic、本文が BIZ UDPゴシック。`@fontsource` で自前配信する（外部に問い合わせない）
-  - `pnpm build` のあと `scripts/subset-fonts.mjs` が、サイトで使っている文字だけを残すようにフォントを削る（使わない文字の範囲のファイルは外す）。`pnpm dev` では削らない。削れなかったときはビルドを止める
-  - BIZ UDPゴシックは Windows 10 / 11 に最初から入っているので、`local()` で端末のフォントを先に使う（あればダウンロードしない）
+- 書体は見出しが Zen Maru Gothic、本文が BIZ UDPゴシック
+  - 配信するのは見出しの Zen Maru Gothic だけ。`pnpm build` のあと `scripts/subset-fonts.mjs` が、**ページごとに**そのページで使う文字だけのフォントを作り、`@font-face` をそのページの `<head>` に直接書き込む（トップで 2ファイル・約104KB）。`pnpm dev` では削らないので、端末の書体で表示される
+  - 本文の BIZ UDPゴシックは配信しない。Windows 10 / 11 には最初から入っているので端末のものを使い、入っていない端末（iPhone・Android）ではヒラギノ角ゴ／Noto Sans JP になる（`global.css` の `--font`）
+  - 以前は `@fontsource` の「文字の範囲ごとに分かれたファイル」をサイト全体の文字で削っていたが、1ファイルにサイト中の漢字が残るため、トップだけで 85ファイル・894KB を読んでいた
 - シーン画像は幅720。一覧のカードと記事のシーン一覧では、`scripts/thumbs.mjs` が作る幅360の版（`scene-N-360.webp`）も使う。`pnpm export`・`pnpm dev`・`pnpm build` の前に、まだないものだけ作る
 - 押せる部分は高さ 44px 以上。キーボードで選ぶと枠が出る（明るい地では紺、紺の地では黄色）
 - LINE・X など公式のガイドラインがあるものは、サイトのルールより公式を優先する

@@ -1,7 +1,8 @@
 ---
-// 書体は自前で配信する（外部サービスに問い合わせない）。日本語は文字の範囲ごとに分かれていて、使う分だけ読み込まれる
-import '@fontsource/biz-udpgothic/400.css';
-import '@fontsource/biz-udpgothic/700.css';
+// 見出しの Zen Maru Gothic は自前で配信する（外部サービスに問い合わせない）。
+// ここで読み込むのは pnpm dev 用の、削っていないフォント。公開するぶんは scripts/subset-fonts.mjs が
+// ビルドのあとにこの @font-face を外し、ページごとに使う文字だけへ削って <head> に書き直す。
+// 本文の BIZ UDPゴシックは配信せず、端末に入っていれば使う（global.css の --font）
 import '@fontsource/zen-maru-gothic/700.css';
 import '@fontsource/zen-maru-gothic/900.css';
 import '../styles/global.css';
