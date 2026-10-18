@@ -20,9 +20,10 @@ dist/ → GitHub Pages
 見た目は Claude Design のキャンバス「雑学スイッチ サイトリデザイン」をもとにしている。色・文字・余白は `src/styles/global.css` の先頭の変数にまとめた。
 
 - 色はロゴの紺（`#1B2A4A`）と黄色（`#FFC23C`）。文字と背景のコントラスト比はすべて 4.5:1 以上
-- 書体は見出しが Zen Maru Gothic、本文が BIZ UDPゴシック
-  - 配信するのは見出しの Zen Maru Gothic だけ。`pnpm build` のあと `scripts/subset-fonts.mjs` が、**ページごとに**そのページで使う文字だけのフォントを作り、`@font-face` をそのページの `<head>` に直接書き込む（トップで 2ファイル・約104KB）。`pnpm dev` では削らないので、端末の書体で表示される
-  - 本文の BIZ UDPゴシックは配信しない。Windows 10 / 11 には最初から入っているので端末のものを使い、入っていない端末（iPhone・Android）ではヒラギノ角ゴ／Noto Sans JP になる（`global.css` の `--font`）
+- 書体は見出しだけ Zen Maru Gothic。それ以外は端末の書体にする（配信するフォントを見出しの分だけにして、スマホの表示を速くするため）
+  - `pnpm build` のあと `scripts/subset-fonts.mjs` が、ビルドした CSS から「見出しの書体（`--font-display`）を使う場所」を読み取り、**ページごとに**そこに出てくる文字だけのフォントを作って、`@font-face` をそのページの `<head>` に直接書き込む（トップで 2ファイル・約29KB）。`pnpm dev` では削らないフォントをそのまま読むので、開発中の見た目は変わらない
+  - 本文は `global.css` の `--font`。Windows 10 / 11 には BIZ UDPゴシックが最初から入っているので端末のものを使い、入っていない端末（iPhone・Android）ではヒラギノ角ゴ／Noto Sans JP になる。どちらも**ダウンロードはしない**
+  - デザインを変えて見出しの指定が増えたときは、`pnpm build` → `pnpm preview` → `pnpm check:fonts` で、見出しの文字がフォントから抜けていないかをブラウザで確かめられる（抜けているとその文字だけ端末の書体になる）
   - 以前は `@fontsource` の「文字の範囲ごとに分かれたファイル」をサイト全体の文字で削っていたが、1ファイルにサイト中の漢字が残るため、トップだけで 85ファイル・894KB を読んでいた
 - シーン画像は幅720。一覧のカードと記事のシーン一覧では、`scripts/thumbs.mjs` が作る幅360の版（`scene-N-360.webp`）も使う。`pnpm export`・`pnpm dev`・`pnpm build` の前に、まだないものだけ作る
 - 押せる部分は高さ 44px 以上。キーボードで選ぶと枠が出る（明るい地では紺、紺の地では黄色）
@@ -86,6 +87,7 @@ sources:
 
 - 太字の `**` は「**約24時間のリズム（体内時計）**が」のように約物のすぐあとで閉じても効く（remark-cjk-friendly）
 - `pnpm build` のあとに `scripts/check-dist.mjs` が、`**` などの Markdown の記号が変換されずに画面に残っていないかを調べ、残っていればビルドを失敗にする（CI でも同じ）
+- `pnpm check:fonts` は、見出しの書体で表示される文字がフォントに入っているかをブラウザで確かめる。Chrome と `pnpm preview` が要るので CI では動かさない（手元でデザインを変えたときに使う）
 
 ## 英語版
 
