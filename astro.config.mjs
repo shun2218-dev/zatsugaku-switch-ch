@@ -8,6 +8,10 @@ import { lastmodOf, isPendingPage } from './scripts/lastmod.mjs';
 export default defineConfig({
   site: process.env.SITE_URL || 'https://zatsugaku-switch.com',
   trailingSlash: 'always',
+  image: {
+    // つなぎのカードで使う YouTube のサムネイルを、ビルド時に webp へ変換して自前で配る（src/lib/youtube.ts）
+    domains: ['i.ytimg.com'],
+  },
   markdown: {
     // 「**約24時間のリズム（体内時計）**が」のように、約物の直後で ** を閉じても太字になるようにする
     // （CommonMark のままだと、閉じる ** の前が約物で後ろが日本語の文字だと太字にならない）。

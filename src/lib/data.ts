@@ -1,7 +1,7 @@
 import videosJson from '../data/videos.json';
 import { CATEGORIES as CATEGORY_RULES } from '../../scripts/categories.mjs';
 import { norm, contentBigrams } from './normalize';
-import { youtube, cardThumbnail } from './youtube';
+import { youtube, cardThumbnail, cardImage } from './youtube';
 
 export type Scene = { text: string; alt: string; image: string | null };
 export type Video = {
@@ -54,7 +54,10 @@ export const pending = await Promise.all(
   (youtube?.videos ?? [])
     .filter((v) => !exportedIds.has(v.id) && Date.parse(v.publishedAt) > newestExported - PENDING_MARGIN_MS)
     .sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt))
-    .map(async (v) => ({ ...v, thumbnail: await cardThumbnail(v) })),
+    .map(async (v) => {
+      const thumbnail = await cardThumbnail(v);
+      return { ...v, thumbnail, card: await cardImage(thumbnail) };
+    }),
 );
 
 // チャンネル名・シリーズ名など、話題を表さないタグ
