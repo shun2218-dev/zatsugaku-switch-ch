@@ -2,7 +2,12 @@ name: English drafts
 
 # 日本語の記事（src/notes の加筆・videos.json の台本）が変わった PR に、英語版を足してコミットする。
 # 英語版がない記事と、日本語が変わった記事を翻訳する（マージで AI 翻訳として公開される）。
-# Secrets の ANTHROPIC_API_KEY がないときは何もしない
+# Secrets の ANTHROPIC_API_KEY がないときは何もしない。
+#
+# コミットの push には Secrets の TRANSLATE_TOKEN（個人アクセストークン）を使う。
+# GITHUB_TOKEN で push したコミットは、GitHub が再帰を防ぐためにワークフローを動かさない仕様で、
+# 英語版を足したあとの状態でビルドの確認（deploy.yml）が走らないまま PR をマージできてしまうため。
+# TRANSLATE_TOKEN がないときは GITHUB_TOKEN で push する（これまでどおり動くが、確認は手元で行うこと）
 on:
   pull_request:
     paths:
@@ -24,10 +29,22 @@ jobs:
     runs-on: ubuntu-latest
     env:
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      COMMIT_MESSAGE: 'content: 英語版を追加・更新（GitHub Actions）'
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
+          token: ${{ secrets.TRANSLATE_TOKEN || github.token }}
+      # TRANSLATE_TOKEN を使うと、このワークフロー自身の push でも PR がもう一度動く。
+      # 自分が足したコミットなら翻訳することはもう残っていないので、ここで止める
+      - id: guard
+        run: |
+          if [ "$(git log -1 --pretty=%s)" = "$COMMIT_MESSAGE" ]; then
+            echo '自分が足したコミットなので何もしません'
+            echo 'skip=1' >> "$GITHUB_OUTPUT"
+          else
+            echo 'skip=0' >> "$GITHUB_OUTPUT"
+          fi
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
@@ -35,13 +52,13 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: 英語版を作る
-        if: env.ANTHROPIC_API_KEY != ''
+        if: env.ANTHROPIC_API_KEY != '' && steps.guard.outputs.skip == '0'
         run: pnpm translate --auto
       - name: 壊れていないか確かめる
-        if: env.ANTHROPIC_API_KEY != ''
+        if: env.ANTHROPIC_API_KEY != '' && steps.guard.outputs.skip == '0'
         run: pnpm build
       - name: 英語版をコミットする
-        if: env.ANTHROPIC_API_KEY != ''
+        if: env.ANTHROPIC_API_KEY != '' && steps.guard.outputs.skip == '0'
         run: |
           git add src/translations
           if git diff --cached --quiet; then
@@ -50,5 +67,5 @@ jobs:
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit -m 'content: 英語版を追加・更新（GitHub Actions）'
+          git commit -m "$COMMIT_MESSAGE"
           git push
