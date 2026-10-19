@@ -105,6 +105,9 @@ sources:
 1. 英語版は自動で作られる
    - `pnpm sync`: 新しい動画と、日本語が変わった記事を翻訳して同じ PR に入れる（`pnpm translate --auto`）
    - `src/notes` や `videos.json` を変える PR: GitHub Actions（`.github/workflows/translate.yml`）が同じように翻訳し、PR にコミットする。Secrets に `ANTHROPIC_API_KEY` が必要（ないときは何もしない）
+     - push には Secrets の `TRANSLATE_TOKEN`（このリポジトリの Contents を読み書きできる個人アクセストークン）を使う。`GITHUB_TOKEN` で push したコミットは、GitHub が再帰を防ぐためにワークフローを動かさない仕様で、英語版を足したあとの状態で `deploy.yml` のビルド確認が走らないまま PR をマージできてしまうため
+     - `TRANSLATE_TOKEN` がないときは `GITHUB_TOKEN` で push する。これまでどおり翻訳は入るが、ビルドの確認は手元で（ブランチを取り込んで `pnpm build`）行うこと
+     - トークンには期限があるので、切れたら作り直して Secrets を入れ替える
    - 手で動かすとき: `pnpm translate <動画ID> ...`・`--auto`・`--missing`（英語版がない記事すべて）・`--stale`（日本語が変わった記事）。`--dry-run` で対象の確認だけ、`--jobs=N` で同時に翻訳する本数（既定 4）
 2. 人が内容を確かめた記事は `reviewedAt: "2026-10-17"` のように日付を入れると、ページの AI 翻訳の注記が「確認済み」になる（任意。翻訳し直すと外れる）
 3. 英語版は、日本語の記事のヘッダーの言語切り替えと「Read this article in English (AI translation)」からリンクされ、hreflang とサイトマップでつながる
