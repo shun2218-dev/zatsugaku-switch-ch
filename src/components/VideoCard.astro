@@ -10,7 +10,7 @@ const { video, showCategory = true, lang = 'ja', eager = false } = Astro.props;
 const t = UI[lang];
 const note = hasNote(video.id);
 ---
-<a class="card" href={articleUrl(video.id, lang)} data-note={note ? '1' : '0'}>
+<a class="card" href={articleUrl(video.id, lang)}>
   <div class="card-img">
     <img src={thumb(video)} srcset={imageSrcset(thumb(video))} sizes={CARD_SIZES} alt="" loading={eager ? 'eager' : 'lazy'} fetchpriority={eager ? 'high' : undefined} decoding="async" width="720" height="1260" />
     {video.format === 'longform' && <span class="badge">{t.longform}</span>}

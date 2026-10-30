@@ -1,0 +1,26 @@
+---
+// 一覧・カテゴリページのページ送り（lib/pagination.ts）。1ページに収まるときは出さない
+import type { Lang } from '../lib/i18n';
+import type { NoteFilter } from '../lib/noteFilter';
+import { listPath, pageNumbers } from '../lib/pagination';
+interface Props { base: string; filter: NoteFilter; page: number; pages: number; lang?: Lang }
+const { base, filter, page, pages, lang = 'ja' } = Astro.props;
+const href = (n: number) => listPath(base, filter, n);
+const text = lang === 'en'
+  ? { nav: 'Pages', prev: '← Previous', next: 'Next →', before: 'Page ', after: '' }
+  : { nav: 'ページ', prev: '← 前へ', next: '次へ →', before: '', after: 'ページ目' };
+---
+{pages > 1 && (
+  <nav class="pager" aria-label={text.nav}>
+    {page > 1 ? <a class="pager-step" href={href(page - 1)} rel="prev">{text.prev}</a> : <span class="pager-step" aria-disabled="true">{text.prev}</span>}
+    <ol class="pager-list">
+      {/* 番号だけだと読み上げで何の数かわからないので、「ページ目」を見えない文字で添える */}
+      {pageNumbers(page, pages).map((n) => (n === null
+        ? <li class="pager-gap" aria-hidden="true">…</li>
+        : <li>{n === page
+          ? <span class="pager-num" aria-current="page">{text.before && <span class="visually-hidden">{text.before}</span>}{n}{text.after && <span class="visually-hidden">{text.after}</span>}</span>
+          : <a class="pager-num" href={href(n)}>{text.before && <span class="visually-hidden">{text.before}</span>}{n}{text.after && <span class="visually-hidden">{text.after}</span>}</a>}</li>))}
+    </ol>
+    {page < pages ? <a class="pager-step" href={href(page + 1)} rel="next">{text.next}</a> : <span class="pager-step" aria-disabled="true">{text.next}</span>}
+  </nav>
+)}

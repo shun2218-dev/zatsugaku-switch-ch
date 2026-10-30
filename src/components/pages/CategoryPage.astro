@@ -1,29 +1,46 @@
 ---
-// カテゴリの雑学（/category/<slug>/ と /en/category/<slug>/）
+// カテゴリの雑学（/category/<slug>/ と /en/category/<slug>/）。24本ずつページに分け、
+// 詳細記事の有無で絞り込んだページ（…/note-yes/ と …/note-no/）も作る（lib/pagination.ts）
 import Base from '../../layouts/Base.astro';
 import VideoCard from '../VideoCard.astro';
 import { EAGER_CARDS } from '../../lib/images';
 import SubscribeCTA from '../SubscribeCTA.astro';
 import Breadcrumb from '../Breadcrumb.astro';
 import CategoryIcon from '../CategoryIcon.astro';
-import NoteFilter from '../NoteFilter.astro';
+import NoteFilterLinks from '../NoteFilterLinks.astro';
 import CategoryLinks from '../CategoryLinks.astro';
+import Pagination from '../Pagination.astro';
 import type { categories } from '../../lib/data';
-import { UI, type Lang, alternatesOf, categoryName, inLang, localePath, titleOf } from '../../lib/i18n';
-interface Props { cat: (typeof categories)[number]; lang?: Lang }
-const { cat, lang = 'ja' } = Astro.props;
-const list = inLang(cat.videos, lang);
+import { NOTE_FILTER_TEXT } from '../../lib/noteFilter';
+import { type ListPage, listAlternates, listLabel, listPath, listSuffix } from '../../lib/pagination';
+import { UI, type Lang, categoryName, inLang, localePath, titleOf } from '../../lib/i18n';
+interface Props { cat: (typeof categories)[number]; list: ListPage; lang?: Lang }
+const { cat, list: { filter, page, pages, items, counts }, lang = 'ja' } = Astro.props;
+const path = `/category/${cat.slug}/`;
+const base = localePath(lang, path);
 const name = categoryName(cat.slug, lang);
-const title = lang === 'en' ? `${name} trivia` : `${name}の雑学`;
+const heading = lang === 'en' ? `${name} trivia` : `${name}の雑学`;
+const suffix = listSuffix(lang, filter, page);
+const samples = items.slice(0, 3);
 const description = lang === 'en'
-  ? `${list.length} trivia articles about ${name.toLowerCase()}, such as ${list.slice(0, 3).map((v) => `“${titleOf(v, lang)}”`).join(', ')}.`
-  : `${name}にまつわる雑学${list.length}本。${list.slice(0, 3).map((v) => `「${v.title}」`).join('')}など、思わず人に話したくなる「なぜ？」を解説します。`;
+  ? `${counts.all} trivia articles about ${name.toLowerCase()}${suffix}${samples.length ? `, such as ${samples.map((v) => `“${titleOf(v, lang)}”`).join(', ')}` : ''}.`
+  : `${name}にまつわる雑学${counts.all}本${suffix}。${samples.map((v) => `「${v.title}」`).join('')}${samples.length ? 'など、' : ''}思わず人に話したくなる「なぜ？」を解説します。`;
+const home = { name: lang === 'en' ? 'Home' : 'ホーム', href: localePath(lang, '/') };
+// 絞り込んだりページを進めたりしたときは、カテゴリの最初のページへ戻れるようにパンくずを1段深くする
+const crumbs = suffix ? [home, { name, href: base }, { name: listLabel(lang, filter, page) }] : [home, { name }];
 ---
-<Base lang={lang} title={title} description={description} alternates={alternatesOf(`/category/${cat.slug}/`)}>
-  <Breadcrumb lang={lang} items={[{ name: lang === 'en' ? 'Home' : 'ホーム', href: localePath(lang, '/') }, { name }]} />
-  <h1 class="page-title page-title-icon"><span class="cat-badge"><CategoryIcon slug={cat.slug} /></span>{title}<span>{UI[lang].count(list.length)}</span></h1>
+<Base lang={lang} title={heading + suffix} description={description} noindex={filter !== 'all'} alternates={listAlternates(path, cat.videos, inLang(cat.videos, 'en'), filter, page)}>
+  <Fragment slot="head">
+    {page > 1 && <link rel="prev" href={listPath(base, filter, page - 1)} />}
+    {page < pages && <link rel="next" href={listPath(base, filter, page + 1)} />}
+  </Fragment>
+  <Breadcrumb lang={lang} items={crumbs} />
+  <h1 class="page-title page-title-icon"><span class="cat-badge"><CategoryIcon slug={cat.slug} /></span>{heading}<span>{UI[lang].count(counts.all)}</span></h1>
   <CategoryLinks current={cat.slug} lang={lang} />
-  <NoteFilter videos={list} lang={lang} />
-  <div class="grid" data-note-grid>{list.map((v, i) => <VideoCard video={v} showCategory={false} lang={lang} eager={i < EAGER_CARDS} />)}</div>
+  <NoteFilterLinks base={base} current={filter} counts={counts} lang={lang} />
+  {items.length
+    ? <div class="grid">{items.map((v, i) => <VideoCard video={v} showCategory={false} lang={lang} eager={i < EAGER_CARDS} />)}</div>
+    : <p class="note-filter-empty">{NOTE_FILTER_TEXT[lang].empty}</p>}
+  <Pagination base={base} filter={filter} page={page} pages={pages} lang={lang} />
   <SubscribeCTA lang={lang} />
 </Base>

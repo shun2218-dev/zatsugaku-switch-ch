@@ -1,0 +1,12 @@
+---
+// 雑学一覧。/trivia/・/trivia/2/・/trivia/note-yes/・/trivia/note-yes/2/ …（lib/pagination.ts）
+import TriviaListPage from '../../components/pages/TriviaListPage.astro';
+import { videos } from '../../lib/data';
+import { type ListPage, listPages } from '../../lib/pagination';
+
+export function getStaticPaths() {
+  return listPages(videos).map(({ page, props }) => ({ params: { page }, props: { list: props } }));
+}
+const { list } = Astro.props as { list: ListPage };
+---
+<TriviaListPage list={list} />

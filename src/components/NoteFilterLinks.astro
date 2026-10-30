@@ -1,0 +1,26 @@
+---
+// 詳細記事の有無で一覧・カテゴリページを絞り込むリンク。絞り込みごとに静的なページがある（lib/pagination.ts）
+// 検索ページはその場で絞り込むので NoteFilter.astro を使う
+import type { Lang } from '../lib/i18n';
+import { NOTE_FILTERS, NOTE_FILTER_TEXT, type NoteFilter } from '../lib/noteFilter';
+import { listPath } from '../lib/pagination';
+interface Props { base: string; current: NoteFilter; counts: Record<NoteFilter, number>; lang?: Lang }
+const { base, current, counts, lang = 'ja' } = Astro.props;
+---
+<nav class="note-filter" aria-labelledby="note-filter-label" data-note-links>
+  <span id="note-filter-label" class="filter-label">{NOTE_FILTER_TEXT[lang].label}</span>
+  {NOTE_FILTERS(lang).map(({ value, label }) => (
+    <a class="note-filter-chip" href={listPath(base, value, 1)} aria-current={value === current ? 'page' : undefined} data-note-link={value}>
+      {label}<span class="note-filter-count">{counts[value]}</span>
+    </a>
+  ))}
+</nav>
+
+<script>
+  // ブラウザで絞り込んでいたころの ?note=yes / ?note=no のリンクで来たら、絞り込んだページへ移る
+  import { readNoteFilter } from '../lib/noteFilter';
+
+  const f = readNoteFilter();
+  const link = f === 'all' ? null : document.querySelector<HTMLAnchorElement>(`[data-note-links] [data-note-link="${f}"]`);
+  if (link && !link.hasAttribute('aria-current')) location.replace(link.href);
+</script>

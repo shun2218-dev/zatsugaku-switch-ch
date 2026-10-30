@@ -1,7 +1,8 @@
 // サイトマップの最終更新日（lastmod）。astro.config.mjs から使う
 // 記事 = 動画の公開日と、詳細記事の確認日（reviewedAt）の新しいほう
 // 英語版の記事 = 人が確かめた日（reviewedAt）、なければ翻訳した日（translatedAt）
-// 一覧・カテゴリ = 含まれる記事のうち最も新しい日（英語のページは英語版の日付で）。それ以外の固定ページは付けない
+// 一覧・カテゴリ = 含まれる記事のうち最も新しい日（英語のページは英語版の日付で）。2ページ目からも同じ日
+// （記事が増えると、どのページも1本ずつ後ろへずれるため）。それ以外の固定ページは付けない
 import { readFileSync, readdirSync } from 'node:fs';
 
 const root = new URL('../', import.meta.url);
@@ -32,13 +33,19 @@ const enVideos = videos.filter((v) => enReviewedAt.has(v.id));
 const newestEn = (list) => (list.length ? new Date(latest(list.map((v) => enReviewedAt.get(v.id)))).toISOString() : undefined);
 
 // 書き出し済みの記事か。/trivia/<動画ID>/ のうち記事でないもの（準備中の仮ページ）はサイトマップに載せない
+// （/trivia/2/ は一覧の2ページ目）
 export function isPendingPage(url) {
   const m = new URL(url).pathname.match(/^\/trivia\/([^/]+)\/$/);
-  return Boolean(m) && !articleDate.has(m[1]);
+  return Boolean(m) && !/^\d+$/.test(m[1]) && !articleDate.has(m[1]);
 }
+
+// 詳細記事の有無で絞り込んだ一覧・カテゴリのページ（/trivia/note-yes/ など。noindex なのでサイトマップに載せない）
+export const isNoteFilterPage = (url) => /\/note-(yes|no)\//.test(new URL(url).pathname);
 
 export function lastmodOf(url) {
   const path = new URL(url).pathname;
+  const list = path.match(/^(.*\/)\d+\/$/);
+  if (list) return lastmodOf(new URL(list[1], url).href);
   const en = path.match(/^\/en\/trivia\/([^/]+)\/$/);
   if (en) return enReviewedAt.has(en[1]) ? new Date(enReviewedAt.get(en[1])).toISOString() : undefined;
   const trivia = path.match(/^\/trivia\/([^/]+)\/$/);
