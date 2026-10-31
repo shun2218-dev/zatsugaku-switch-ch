@@ -1,0 +1,12 @@
+---
+// カテゴリの雑学。/category/<slug>/・/category/<slug>/2/・/category/<slug>/note-yes/ …（lib/pagination.ts）
+import CategoryPage from '../../../components/pages/CategoryPage.astro';
+import { categories } from '../../../lib/data';
+import { type ListPage, listPages } from '../../../lib/pagination';
+
+export function getStaticPaths() {
+  return categories.flatMap((cat) => listPages(cat.videos).map(({ page, props }) => ({ params: { slug: cat.slug, page }, props: { cat, list: props } })));
+}
+const { cat, list } = Astro.props as { cat: (typeof categories)[number]; list: ListPage };
+---
+<CategoryPage cat={cat} list={list} />

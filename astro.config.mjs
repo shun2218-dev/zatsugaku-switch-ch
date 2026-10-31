@@ -2,7 +2,7 @@ import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 import { unified } from '@astrojs/markdown-remark';
 import remarkCjkFriendly from 'remark-cjk-friendly';
-import { lastmodOf, isPendingPage } from './scripts/lastmod.mjs';
+import { lastmodOf, isPendingPage, isNoteFilterPage } from './scripts/lastmod.mjs';
 
 // 本番は https://zatsugaku-switch.com（CI では Variables の SITE_URL で上書きできる）
 export default defineConfig({
@@ -23,7 +23,7 @@ export default defineConfig({
     sitemap({
       // 英語版の記事（/en/trivia/<動画ID>/）と日本語の記事（/trivia/<動画ID>/）を hreflang でつなぐ
       i18n: { defaultLocale: 'ja', locales: { ja: 'ja', en: 'en' } },
-      filter: (page) => !page.includes('/search/') && !isPendingPage(page),
+      filter: (page) => !page.includes('/search/') && !isPendingPage(page) && !isNoteFilterPage(page),
       serialize: (item) => ({ ...item, lastmod: lastmodOf(item.url) }),
     }),
   ],

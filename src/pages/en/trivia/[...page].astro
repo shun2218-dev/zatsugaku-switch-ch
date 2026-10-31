@@ -1,0 +1,12 @@
+---
+import TriviaListPage from '../../../components/pages/TriviaListPage.astro';
+import { videos } from '../../../lib/data';
+import { inLang } from '../../../lib/i18n';
+import { type ListPage, listPages } from '../../../lib/pagination';
+
+export function getStaticPaths() {
+  return listPages(inLang(videos, 'en')).map(({ page, props }) => ({ params: { page }, props: { list: props } }));
+}
+const { list } = Astro.props as { list: ListPage };
+---
+<TriviaListPage list={list} lang="en" />

@@ -1,25 +1,37 @@
 ---
-// 雑学一覧（/trivia/ と /en/trivia/）
+// 雑学一覧（/trivia/ と /en/trivia/）。24本ずつページに分け、
+// 詳細記事の有無で絞り込んだページ（…/note-yes/ と …/note-no/）も作る（lib/pagination.ts）
 import Base from '../../layouts/Base.astro';
 import VideoCard from '../VideoCard.astro';
 import { EAGER_CARDS } from '../../lib/images';
 import SearchForm from '../SearchForm.astro';
-import NoteFilter from '../NoteFilter.astro';
+import NoteFilterLinks from '../NoteFilterLinks.astro';
 import CategoryLinks from '../CategoryLinks.astro';
+import Pagination from '../Pagination.astro';
 import { videos } from '../../lib/data';
-import { UI, type Lang, alternatesOf, inLang } from '../../lib/i18n';
-interface Props { lang?: Lang }
-const { lang = 'ja' } = Astro.props;
-const list = inLang(videos, lang);
-const title = lang === 'en' ? 'All trivia' : '雑学一覧';
+import { NOTE_FILTER_TEXT } from '../../lib/noteFilter';
+import { type ListPage, listAlternates, listPath, listSuffix } from '../../lib/pagination';
+import { UI, type Lang, inLang, localePath } from '../../lib/i18n';
+interface Props { list: ListPage; lang?: Lang }
+const { list: { filter, page, pages, items, counts }, lang = 'ja' } = Astro.props;
+const base = localePath(lang, '/trivia/');
+const heading = lang === 'en' ? 'All trivia' : '雑学一覧';
+const suffix = listSuffix(lang, filter, page);
 const description = lang === 'en'
-  ? `All ${list.length} trivia articles from Zatsugaku Switch, translated into English by AI.`
-  : `雑学スイッチで紹介した雑学${list.length}本の一覧です。`;
+  ? `All ${counts.all} trivia articles from Zatsugaku Switch${suffix}, translated into English by AI.`
+  : `雑学スイッチで紹介した雑学${counts.all}本の一覧です${suffix}。`;
 ---
-<Base lang={lang} title={title} description={description} alternates={alternatesOf('/trivia/')}>
-  <h1 class="page-title">{title}<span>{UI[lang].count(list.length)}</span></h1>
+<Base lang={lang} title={heading + suffix} description={description} noindex={filter !== 'all'} alternates={listAlternates('/trivia/', videos, inLang(videos, 'en'), filter, page)}>
+  <Fragment slot="head">
+    {page > 1 && <link rel="prev" href={listPath(base, filter, page - 1)} />}
+    {page < pages && <link rel="next" href={listPath(base, filter, page + 1)} />}
+  </Fragment>
+  <h1 class="page-title">{heading}<span>{UI[lang].count(counts.all)}</span></h1>
   <SearchForm id="list-q" class="search-page" lang={lang} />
   <CategoryLinks lang={lang} />
-  <NoteFilter videos={list} lang={lang} />
-  <div class="grid" data-note-grid>{list.map((v, i) => <VideoCard video={v} lang={lang} eager={i < EAGER_CARDS} />)}</div>
+  <NoteFilterLinks base={base} current={filter} counts={counts} lang={lang} />
+  {items.length
+    ? <div class="grid">{items.map((v, i) => <VideoCard video={v} lang={lang} eager={i < EAGER_CARDS} />)}</div>
+    : <p class="note-filter-empty">{NOTE_FILTER_TEXT[lang].empty}</p>}
+  <Pagination base={base} filter={filter} page={page} pages={pages} lang={lang} />
 </Base>

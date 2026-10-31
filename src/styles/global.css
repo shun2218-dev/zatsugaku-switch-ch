@@ -244,9 +244,9 @@ a.card-cat:hover { color: var(--amber-ink); text-decoration: underline; }
 .note-filter { margin-bottom: 28px; }
 .filter-label { margin-right: 4px; font-size: .85rem; font-weight: 700; color: var(--muted); }
 .cat-chip, .note-filter-chip, .tag { display: inline-flex; align-items: center; gap: .45em; min-height: 40px; padding: 0 1em; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); color: var(--navy-2); font-size: .9rem; text-decoration: none; }
-.cat-chip:hover, .note-filter-opt:hover .note-filter-chip, .tag:hover { border-color: var(--amber-ink); background: var(--amber-soft); color: var(--navy-2); }
+.cat-chip:hover, .note-filter-opt:hover .note-filter-chip, a.note-filter-chip:hover, .tag:hover { border-color: var(--amber-ink); background: var(--amber-soft); color: var(--navy-2); }
 .cat-chip .icon { color: var(--amber-ink); }
-.cat-chip[aria-current='page'] { background: var(--navy); border-color: var(--navy); color: #fff; font-weight: 700; }
+.cat-chip[aria-current='page'], .note-filter-chip[aria-current='page'] { background: var(--navy); border-color: var(--navy); color: #fff; font-weight: 700; }
 .cat-chip[aria-current='page'] .icon { color: var(--amber); }
 .note-filter-opt { position: relative; }
 .note-filter-opt input { position: absolute; opacity: 0; pointer-events: none; }
@@ -255,8 +255,25 @@ a.card-cat:hover { color: var(--amber-ink); text-decoration: underline; }
 .note-filter-opt input:focus-visible + .note-filter-chip { outline: 3px solid var(--navy); outline-offset: 3px; }
 .note-filter-count { font-size: .75rem; color: var(--muted); font-weight: 500; }
 .note-filter-count:empty { display: none; }
-.note-filter-opt input:checked + .note-filter-chip .note-filter-count { color: var(--amber); }
+.note-filter-opt input:checked + .note-filter-chip .note-filter-count, .note-filter-chip[aria-current='page'] .note-filter-count { color: var(--amber); }
 .note-filter-empty { color: var(--muted); }
+
+/* 一覧・カテゴリページのページ送り。スマホは番号を1段目、前へ・次へを2段目に並べる */
+.pager { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 8px; margin: 40px 0 0; }
+.pager-list { grid-column: 1 / -1; order: -1; display: flex; justify-content: center; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.pager-step:first-child { justify-self: end; }
+.pager-step:last-child { justify-self: start; }
+.pager-num, .pager-step { display: inline-flex; align-items: center; justify-content: center; min-width: 40px; min-height: 40px; padding: 0 .8em; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); color: var(--navy-2); font-weight: 700; text-decoration: none; }
+.pager-num { padding: 0; }
+@media (min-width: 640px) {
+  .pager { display: flex; justify-content: center; align-items: center; gap: 8px; }
+  .pager-list { order: 0; gap: 8px; }
+  .pager-num, .pager-step { min-width: 44px; min-height: 44px; }
+}
+a.pager-num:hover, a.pager-step:hover { border-color: var(--amber-ink); background: var(--amber-soft); color: var(--navy-2); }
+.pager-num[aria-current='page'] { background: var(--navy); border-color: var(--navy); color: #fff; }
+.pager-step[aria-disabled='true'] { color: var(--muted); opacity: .5; }
+.pager-gap { display: inline-flex; align-items: center; min-height: 40px; color: var(--muted); }
 .tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
 .search-page { max-width: 640px; margin-bottom: 20px; }
 .search-status { margin: 20px 0 16px; color: var(--muted); font-weight: 700; }
