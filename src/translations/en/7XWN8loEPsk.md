@@ -1,6 +1,6 @@
 ---
 # Claude で日本語から翻訳した英語版（AI 翻訳としてそのまま公開される）。人が確かめたら reviewedAt に日付（"2026-10-17" の形）を入れると「確認済み」と出る
-reviewedAt: ""
+reviewedAt: "2026-11-04"
 translatedAt: "2026-11-04"
 sourceHash: 2a1b9c03a08a
 title: Why does a mirror flip only left and right?
