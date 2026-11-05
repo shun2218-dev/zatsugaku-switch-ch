@@ -133,7 +133,7 @@ main { padding-block: 24px 0; }
 
 /* 今日のなぜ？（スイッチで答えを出す） */
 .quiz { flex: 1 1 420px; min-width: 0; max-width: 500px; display: flex; gap: 20px; padding: 20px; border-radius: var(--radius-lg); background: var(--surface); color: var(--ink); box-shadow: 0 24px 60px rgb(0 0 0 / .28); }
-.quiz-img { flex: none; width: 120px; aspect-ratio: 9 / 16; object-fit: cover; border-radius: 16px; background: var(--line); }
+.quiz-img { flex: none; align-self: flex-start; width: 120px; aspect-ratio: 9 / 16; object-fit: cover; border-radius: 16px; background: var(--line); }
 .quiz-body { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
 .quiz-label { margin: 0; color: var(--amber-ink); font-size: .85rem; font-weight: 700; letter-spacing: .08em; }
 .quiz h2 { margin: 0; font-family: var(--font-display); font-size: 1.4rem; line-height: 1.45; }
